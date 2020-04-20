@@ -48,6 +48,11 @@ return [
             'root' => storage_path('app'),
         ],
 
+        'etl' => [
+            'driver' => 'local',
+            'root' => storage_path('ETLFiles'),
+        ],
+
         'public' => [
             'driver' => 'local',
             'root' => storage_path('app/public'),

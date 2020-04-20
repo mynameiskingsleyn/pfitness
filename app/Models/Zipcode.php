@@ -18,6 +18,7 @@ class Zipcode extends Model
     {
         $this->users = new User();
         //$this->helper = new ZipCodeHelper();
+        $this->etlFields = ['zip'=>100,'city'=>100,'state'=>100,'latitude'=>100,'longitude'=>100];
     }
 
 
@@ -54,8 +55,14 @@ class Zipcode extends Model
         return $zipCodes;
     }
 
-    public function CacheZipCodes($zipCode,$value)
+    public function getEtlFields()
     {
-        $result = $this->helper->cacheHMGet()
+        return $this->etlFields;
     }
+
+    public function updateEtlFields($fieldsArray)
+    {
+        $this->etlFields = $fieldsArray;
+    }
+
 }

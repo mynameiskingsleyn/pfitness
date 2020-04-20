@@ -14,7 +14,13 @@ class CreateZipcodesTable extends Migration
     public function up()
     {
         Schema::create('zipcodes', function (Blueprint $table) {
-            $table->id();
+            //$table->id();
+            $table->string('zip')->unique();
+            $table->string('city');
+            $table->string('state');
+            $table->unsignedInteger('latitude');
+            $table->string('longitude');
+
             $table->timestamps();
         });
     }
