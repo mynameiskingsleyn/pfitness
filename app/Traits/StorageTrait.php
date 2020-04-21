@@ -14,13 +14,14 @@ Trait StorageTrait
                                     ->getDriver()
                                     ->getAdapter()
                                     ->getPathPrefix();
+            //$storagePath = 'xyz';
         }else{
             $storagePath =  Storage::disk()
                 ->getDriver()
                 ->getAdapter()
                 ->getPathPrefix();
         }
-        return $storagePath.'/'.$this->fileName;
+        return $storagePath.$this->fileName;
 
     }
 }

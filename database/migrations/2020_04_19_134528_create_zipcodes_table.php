@@ -15,13 +15,13 @@ class CreateZipcodesTable extends Migration
     {
         Schema::create('zipcodes', function (Blueprint $table) {
             //$table->id();
-            $table->string('zip')->unique();
-            $table->string('city');
-            $table->string('state');
-            $table->unsignedInteger('latitude');
+            $table->string('zip')->primary();
+            $table->string('city')->nullable();
+            $table->string('state')->nullable();
+            $table->string('latitude');
             $table->string('longitude');
-
             $table->timestamps();
+            $table->index(['zip','latitude','longitude']);
         });
     }
 

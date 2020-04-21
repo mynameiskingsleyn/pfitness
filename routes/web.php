@@ -16,3 +16,6 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('welcome');
 });
+
+Route::get('search-users', 'SearchController@index')->name('search-index');
+Route::get('load-zip-codes', 'SearchController@loadZipCodes')->name('loadZip');

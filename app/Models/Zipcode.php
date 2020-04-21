@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 //use App\Helpers\ZipCodeHelper;
 
-use User;
+use App\Models\User;
 
 class Zipcode extends Model
 {
