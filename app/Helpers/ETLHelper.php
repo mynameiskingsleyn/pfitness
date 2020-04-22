@@ -31,7 +31,7 @@ class ETLHelper
         $file_handle = fopen($this->filePath, 'r');
         $counter = 0;
         while(!feof($file_handle) && $counter < 1){
-            $line = fgetcsv($file_handle,1024,$this->seperator);
+            $line = fgetcsv($file_handle,2024,$this->seperator);
             $counter ++;
         }
         fclose($file_handle);
@@ -69,7 +69,11 @@ class ETLHelper
             while(!feof($file_handle)){
                 if($this->headerRead){
                     $line_of_text[$counter] = fgetcsv($file_handle,1024,$this->seperator);
-                    $insertValues[] = $this->setInserter($line_of_text[$counter]);
+                    $values = $this->setInserter($line_of_text[$counter]);
+                    if(!empty($values)){
+                        $insertValues[] = $values;
+                    }
+
                     if($batchCounter >= $this->batchSize-1){
                         $this->insert($insertValues);
                         $insertValues = [];
@@ -87,19 +91,27 @@ class ETLHelper
             }
             fclose($file_handle);
         }
-        if(!empty($insertValues)){
+        if(!empty($insertValues) && count($insertValues) > 0){
             $this->insert($insertValues);
         }
-        \Log::info('nuber of batches ='.$this->numberOfBatch.', number of recodrs inserted ='.$counter);
-        return $insertValues;
+        \Log::info('number of batches ='.$this->numberOfBatch.', number of recodrs inserted ='.$counter);
+        return true;
     }
 
     public function setInserter($line)
     {
         $insert = [];
-        foreach($this->modelHeaders as $key=>$val){
-            $insert[$key] = $line[$val];
+        if(is_array($line) && !empty($line)){
+            foreach($this->modelHeaders as $key=>$val){
+                if(is_array($line)){
+                    $insert[$key] = isset($line[$val]) ? $line[$val] : '';
+                }
+
+            }
+            $insert['created_at'] = \Carbon\Carbon::now();
+            $insert['updated_at'] = \Carbon\Carbon::now();
         }
+
         return $insert;
     }
 

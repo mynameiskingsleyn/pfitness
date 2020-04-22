@@ -3,7 +3,7 @@
 namespace App\Traits;
 
 use Illuminate\Support\Facades\Redis;
-use Illuminate\Database\Eloquent\Model;
+//use Illuminate\Database\Eloquent\Model;
 
 trait CacheTrait
 {
@@ -17,7 +17,7 @@ trait CacheTrait
 
     public function isCacheExists($rKey)
     {
-        return Redis::exist($rKey);
+        return Redis::exists($rKey);
     }
 
     public function cacheSet($key, $value)

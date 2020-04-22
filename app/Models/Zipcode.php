@@ -39,19 +39,23 @@ class Zipcode extends Model
 
     public function getZipInfo($zipCode)
     {
-        return $this->where(['zipcode'=>$zipCode])->first();
+        return $this->where(['zip'=>$zipCode])->first();
 
     }
 
     public function getZipCodes($zipCode,$radius)
     {
+
+        //dd($zipCode);
         $currentZip = $this->getZipInfo($zipCode);
+        //dd($currentZip);
         $lat = $currentZip->latitude;
-        $lon = $currentZip->longitude;
-        $zipCodes = DB::select("SELECT distinct(zc.zipcode), SQRT(POWER(69.1 * (zc.latitude - ".$lat."), 2) + POWER(69.1 * (".$lon." - zc.longitude) * COS(zc.latitude / 57.3), 2)) AS `distance_in_miles`
-            FROM `".$this->table."` AS zc, 
+        $lon = $currentZip->longitude; //dd($lon);
+        $zipCodes = \DB::select("SELECT distinct(zc.zip), SQRT(POWER(69.1 * (zc.latitude - ".$lat."), 2) + POWER(69.1 * (".$lon." - zc.longitude) * COS(zc.latitude / 57.3), 2)) AS `distance_in_miles`
+            FROM `".$this->table."` AS zc
             HAVING (`distance_in_miles` <= ".$radius." AND  `distance_in_miles` > 0)
             ORDER BY `distance_in_miles` ASC;");
+
         return $zipCodes;
     }
 
