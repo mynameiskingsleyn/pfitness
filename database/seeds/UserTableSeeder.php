@@ -3,6 +3,7 @@
 use Illuminate\Database\Seeder;
 use App\Models\User;
 
+
 class UserTableSeeder extends Seeder
 {
     /**
@@ -13,21 +14,14 @@ class UserTableSeeder extends Seeder
     public function run()
     {
         //
-        //delete users table records
+        $zipCodes = App\Models\Zipcode::whereBetween('zip',['32000','48900'])->get();
+        $this->command->info('users table seeding..');
         DB::table('users')->delete();
-        // $this->call(UsersTableSeeder::class);
-//        DB::table('users')->insert([
-//            'id' => 1,
-//            'name'=> 'King',
-//            'email' => 'king@yahoo.com',
-//            'password'=> bcrypt('password'),
-//            'remember_token'=> str_random(7),
-//            'created_at'=>now(),
-//            'updated_at'=>now()
-//        ]);
-
-        factory(User::class, 40)->create();
-
+        $zipCodes->each(function($zipC){
+            factory(User::class, 10)->create(['zipcode'=>$zipC->zip,
+               'city'=>$zipC->city, 'state'=>$zipC->state ]);
+        });
+       // factory(User::class, 40)->create();
         $this->command->info('users table seeded..');
     }
 }

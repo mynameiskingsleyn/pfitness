@@ -22,11 +22,33 @@ class SearchController extends Controller
         $this->zipcodeHelper = $zipCodeHelper;
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $miles = 100;
+        $miles = 4;
+        $zip = '48341';
+        if($zip){
+            $this->zipcodeHelper->setCurrentZip($zip);
+        }
         $zipCode = $this->zipcodeHelper->getCurrentZip();
         $users = $this->userHelper->getUsersInZip($zipCode,$miles);
+        foreach($users as $aUser){
+            //dd($aUser);
+            $aUser->setDistanceFromSelectedZipAttribute();
+        }
+//        $users = $users->sortBy(function($user){
+//            return $user->distance;
+//        });
+        $users=$users->sortBy(['lname']);
+        $users=$users->sortBy(['distance']);
+        // sort
+
+        $oneUser = $users->first();
+        //dd($oneUser->distance);
+        //dd($oneUser);
+        //dd($oneUser->DistanceFromZip());
+        //dd('here');
+        //dd($users->sortBy('distanceFromSelectedZip'));
+        dd($users);
     }
 
     /**  loads zipcode db */

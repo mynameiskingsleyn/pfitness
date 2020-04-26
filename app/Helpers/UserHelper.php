@@ -15,5 +15,10 @@ class UserHelper extends BaseHelper
     public function getUsersInZip($zipcode,$miles)
     {
         $zipsWithinCode = $this->zipcodeHelper->getZipsNear($zipcode,$miles);
+        //dd($zipsWithinCode);
+        //dd('here');
+        $zips = array_column($zipsWithinCode,'zip');
+        $users = $this->user->whereIn('zipcode',$zips)->get();
+        return $users;
     }
 }

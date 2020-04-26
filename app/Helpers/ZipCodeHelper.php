@@ -41,16 +41,17 @@ class ZipCodeHelper extends BaseHelper
 
     public function getCachedZipCodesNearZipcode($zipCache)
     {
-        $zipsNear = $this->cacheGet($zipCache);
+
+        $zipsNearJson = $this->cacheGet($zipCache);
 
         if(empty($zipsNear)){
             $zipsNear = $this->zipcodeModel->getZipCodes($this->zipCode,$this->radius);
-            dd($zipsNear);
             if(!empty($zipsNear)){
-                $this->cacheSet($zipCache,$zipsNear);
+                $this->cacheSet($zipCache,json_encode($zipsNear));
             }
         }
-        return $zipsNear;
+        $result = json_decode($this->cacheGet($zipCache),true);
+        return $result;
     }
 
     public function getZipNearCacheKey($zipcode,$radius)
@@ -79,7 +80,8 @@ class ZipCodeHelper extends BaseHelper
     {
         $cachename = $this->getZipNearCacheKey($zipcode,$miles);
         $value = $this->getCachedZipCodesNearZipcode($cachename);
-
+       // dd($value);
+        return $value;
     }
 
 

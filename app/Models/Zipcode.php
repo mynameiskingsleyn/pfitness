@@ -69,4 +69,18 @@ class Zipcode extends Model
         $this->etlFields = $fieldsArray;
     }
 
+    public function distanceApart($first,$second)
+    {
+
+        \Log::debug('comparing '.$first.' and '.$second);
+        $firstInfo = $this->where('zip',$first)->first();
+        $secondInfo = $this->where('zip',$second)->first();
+        $firstLat = $firstInfo->latitude; $firstLon = $firstInfo->longitude;
+        $secondLat = $secondInfo->latitude; $secondLon = $secondInfo->longitude;
+
+        $distance = sqrt(pow(69.1*($firstLat - $secondLat),2) + Pow(69.1 * ($secondLon - $firstLon) * cos($firstLat / 57.3), 2));
+        \Log::debug("distance between two is $distance");
+        return $distance;
+    }
+
 }
