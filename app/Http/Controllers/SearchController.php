@@ -8,47 +8,39 @@ use App\Helpers\ETLHelper;
 
 use App\Helpers\UserHelper;
 
-use App\Models\Zipcode;
 
-use App\Helpers\ZipCodeHelper;
 
-class SearchController extends Controller
+
+
+class SearchController extends MainController
 {
     //
-    public function __construct(UserHelper $userHelp, Zipcode $zipcode, ZipCodeHelper $zipCodeHelper)
+    public function __construct(UserHelper $userHelp)
     {
-        //$this->zipcode = new Zipcode();
         $this->userHelper = $userHelp;
-        $this->zipcodeHelper = $zipCodeHelper;
+
     }
 
     public function index(Request $request)
     {
-        $miles = 4;
-        $zip = '48341';
-        if($zip){
-            $this->zipcodeHelper->setCurrentZip($zip);
-        }
-        $zipCode = $this->zipcodeHelper->getCurrentZip();
-        $users = $this->userHelper->getUsersInZip($zipCode,$miles);
-        foreach($users as $aUser){
-            //dd($aUser);
-            $aUser->setDistanceFromSelectedZipAttribute();
-        }
-//        $users = $users->sortBy(function($user){
-//            return $user->distance;
-//        });
-        $users=$users->sortBy(['lname']);
-        $users=$users->sortBy(['distance']);
-        // sort
+//        $miles = $request->get('miles') ?? 2;
+//        $zip = $request->get('zip') ?? '48341';
+//        $users = $this->userHelper->getUsersInZip($zip,$miles);
 
-        $oneUser = $users->first();
-        //dd($oneUser->distance);
-        //dd($oneUser);
-        //dd($oneUser->DistanceFromZip());
-        //dd('here');
-        //dd($users->sortBy('distanceFromSelectedZip'));
-        dd($users);
+
+        //dd($pagenate);
+        $url = $this->pagenationCheck($request);
+        if($url){
+            return redirect($url);
+        }
+        //dd('continue after redirection');
+
+        $result = $this->userHelper->getUsers($request);
+        $users = $result['users'];
+        $zip = $result['zip'];
+        $miles =$result['miles'];
+        //$oneUser = $users->first();
+        return view('search.search',compact('users','zip','miles'));
     }
 
     /**  loads zipcode db */
@@ -76,6 +68,7 @@ class SearchController extends Controller
 
         //dd($insertValues);
 
-
     }
+
+
 }

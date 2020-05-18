@@ -62,7 +62,7 @@ class User extends Authenticatable
         $currentZip = \Session::get('current_zip');
         $distance = $zipCodeModel->distanceApart($this->zipcode,$currentZip);
         //dd('ggoood');
-        $distance = number_format($distance,4);
+        $distance = number_format($distance,1);
         return $distance;
     }
 
@@ -75,6 +75,11 @@ class User extends Authenticatable
     public function getPrefferedAttribute()
     {
 
+    }
+
+    public function path()
+    {
+        return '/testing';
     }
 
 

@@ -17,3 +17,7 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
+
+Route::get('auto_complete_zip','Api\SearchController@zipCodeAutoComplete')->name('zip_auto_complete');
+
+Route::get('search_users', 'Api\SearchController@index')->name('api-search-index');

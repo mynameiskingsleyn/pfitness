@@ -14,6 +14,8 @@ class Kernel extends ConsoleKernel
      */
     protected $commands = [
         //
+        '\App\Console\Commands\CronTest',
+        '\App\Console\Commands\CronEtlLoad'
     ];
 
     /**
@@ -25,6 +27,8 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule)
     {
         // $schedule->command('inspire')->hourly();
+        //$schedule->command('cron:test')->everyMinute();
+        //$schedule->command('cron:Etl zipcode us-zip-code.csv zips')->everyMinute(); //type: what to call the operation
     }
 
     /**

@@ -3,11 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 //use App\Helpers\ZipCodeHelper;
 
 use App\Models\User;
 
-class Zipcode extends Model
+class Zipcode extends BaseModel
 {
     //
     public $currentZip;
@@ -16,6 +17,7 @@ class Zipcode extends Model
 
     public function __construct()
     {
+
         $this->users = new User();
         //$this->helper = new ZipCodeHelper();
         $this->etlFields = ['zip'=>100,'city'=>100,'state'=>100,'latitude'=>100,'longitude'=>100];
@@ -47,14 +49,18 @@ class Zipcode extends Model
     {
 
         //dd($zipCode);
+        $zipCodes=null;
         $currentZip = $this->getZipInfo($zipCode);
         //dd($currentZip);
-        $lat = $currentZip->latitude;
-        $lon = $currentZip->longitude; //dd($lon);
-        $zipCodes = \DB::select("SELECT distinct(zc.zip), SQRT(POWER(69.1 * (zc.latitude - ".$lat."), 2) + POWER(69.1 * (".$lon." - zc.longitude) * COS(zc.latitude / 57.3), 2)) AS `distance_in_miles`
+        if($currentZip){
+            $lat = $currentZip->latitude;
+            $lon = $currentZip->longitude; //dd($lon);
+            $zipCodes = \DB::select("SELECT distinct(zc.zip), SQRT(POWER(69.1 * (zc.latitude - ".$lat."), 2) + POWER(69.1 * (".$lon." - zc.longitude) * COS(zc.latitude / 57.3), 2)) AS `distance_in_miles`
             FROM `".$this->table."` AS zc
-            HAVING (`distance_in_miles` <= ".$radius." AND  `distance_in_miles` > 0)
+            HAVING (`distance_in_miles` <= ".$radius." AND  `distance_in_miles` >= 0)
             ORDER BY `distance_in_miles` ASC;");
+        }
+
 
         return $zipCodes;
     }
@@ -72,14 +78,14 @@ class Zipcode extends Model
     public function distanceApart($first,$second)
     {
 
-        \Log::debug('comparing '.$first.' and '.$second);
+       // \Log::debug('comparing '.$first.' and '.$second);
         $firstInfo = $this->where('zip',$first)->first();
         $secondInfo = $this->where('zip',$second)->first();
         $firstLat = $firstInfo->latitude; $firstLon = $firstInfo->longitude;
         $secondLat = $secondInfo->latitude; $secondLon = $secondInfo->longitude;
 
         $distance = sqrt(pow(69.1*($firstLat - $secondLat),2) + Pow(69.1 * ($secondLon - $firstLon) * cos($firstLat / 57.3), 2));
-        \Log::debug("distance between two is $distance");
+       // \Log::debug("distance between two is $distance");
         return $distance;
     }
 

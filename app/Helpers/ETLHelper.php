@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Log;
 class ETLHelper
 {
     use StorageTrait;
-    protected $headerRead;
+    public $headerRead;
     public $filePath;
 
 
@@ -119,7 +119,32 @@ class ETLHelper
     {
         $this->numberOfBatch++;
         $this->model->insert($array);
-        //\Log::debug($array);
+        \Log::debug("number of record in batch ".count($array));
+    }
+
+    public function getRecordCount()
+    {
+        $linecount = 0;
+        if(!$this->setFilePath())
+            $this->setFilePath($this->fileName);
+
+        $file_handle = fopen($this->filePath, 'r');
+        while(!feof($file_handle)){
+            $line = fgetcsv($file_handle,2024,$this->seperator);
+            $linecount ++;
+        }
+        fclose($file_handle);
+        if(!$this->headerRead){
+            $linecount--;
+        }
+        return $linecount;
+    }
+
+    public function clearTable()
+    {
+        $this->model->query()->truncate();
+        $table = $this->model->getTable();
+        return "Truncated $table table";
     }
 
 }
