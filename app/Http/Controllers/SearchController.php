@@ -34,13 +34,26 @@ class SearchController extends MainController
             return redirect($url);
         }
         //dd('continue after redirection');
-
+        //
         $result = $this->userHelper->getUsers($request);
         $users = $result['users'];
         $zip = $result['zip'];
         $miles =$result['miles'];
+        $nextPage = isset($result['next_page']) ? $result['next_page'] :'';
+        $prevPage = isset($result['prev_page']) ? $result['prev_page'] :'';
+        $pageGroup = isset($result['page_group']) ? $result['page_group'] :'';
+        $currentPage = isset($result['current_page']) ? $result['current_page'] :'';
+        $count = isset($result['count']) ? $result['count'] :'';
+        //dd('herer now');
         //$oneUser = $users->first();
-        return view('search.search',compact('users','zip','miles'));
+        //if($pageGroup){
+            //$pageGroup = json_encode($pageGroup);
+            $pageGroup = collect($pageGroup);
+        //}
+        //dd($nextPage);
+       // dd($result);
+        //dd($pageGroup);
+        return view('search.search',compact('users','zip','miles','nextPage','prevPage','count','pageGroup','currentPage'));
     }
 
     /**  loads zipcode db */

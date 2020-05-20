@@ -24,6 +24,7 @@ Vue.component('example-component', require('./components/ExampleComponent.vue').
 //Vue.component('users', require('./components/Users.vue').default);
 Vue.component('users-search', require('./components/userSearch.vue').default);
 Vue.component('loading', require('./components/loading.vue').default);
+Vue.component('paginate',require('./components/Paginator.vue').default);
 
 
 /**

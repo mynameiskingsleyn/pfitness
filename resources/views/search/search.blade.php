@@ -3,8 +3,8 @@
 @section('content')
     <div class="container">
 
-            <users-search :zip="{{ $zip }}" :susers="{{ $users }}" :miles="{{ $miles }}"
-
+            <users-search :zip="{{ $zip }}" :susers="{{ $users }}" :miles="{{ $miles }}" nextpage="{{ $nextPage }}"  prevpage="{{ $prevPage }}"
+            :uscount="{{ $count }}" pagegroup="{{ $pageGroup }}" currentpage="{{ $currentPage }}"
             ></users-search>
             {{--<div class="col-md-4">--}}
                 {{--<div class="panel panel-default">--}}
@@ -57,8 +57,8 @@
 
 @endsection
 <script>
-    import UserSearch from "../../js/components/userSearch";
-    export default {
-        components: {UserSearch}
-    }
+    // import UserSearch from "../../js/components/userSearch";
+    // export default {
+    //     components: {UserSearch}
+    // }
 </script>

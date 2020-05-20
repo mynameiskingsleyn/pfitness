@@ -23,16 +23,20 @@ class MainController extends Controller
     public function pagenationCheck(Request $request)
     {
         $pagenate = $this->userHelper->pagenate;
-        if($pagenate){
+        $isApi = $this->userHelper->isApi($request);
+        if($pagenate) {
+            //dd('api');
             $hasPagenate = $this->userHelper->requestHasPagination($request);
-            if(!$hasPagenate){// add pagenation
+            if (!$hasPagenate) {// add pagenation
                 //$this->userHelper->addParams($request);
                 //dd($request->all());
                 $url = $this->userHelper->rebuildQueryWithPagination($request);
-                return $url;
                 //dd($url);
+                return $url;
             }
         }
+
+
         return null;
     }
 }

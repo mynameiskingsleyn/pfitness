@@ -23,12 +23,26 @@ class SearchController extends MainController
 
     public function index(Request $request)
     {
+        $url = $this->pagenationCheck($request);
+        if($url){
+            return redirect($url);
+        }
+        //dd('here yall');
         $result = $this->userHelper->getUsers($request);
+
         $users = $result['users'];
         $zip = $result['zip'];
         $miles =$result['miles'];
+        $next_page = isset($result['next_page']) ? $result['next_page'] :'';
+        $prev_page = isset($result['prev_page']) ? $result['prev_page'] :'';
+        $page_group = isset($result['page_group']) ? $result['page_group'] :'';
+        $current_page = isset($result['current_page']) ? $result['current_page'] :'';
+        $count = isset($result['count']) ? $result['count'] :'';
         //$users =  $allusers->toArray();
-        return response(['users'=>$users,'zip'=>$zip,'miles'=>$miles],200);
+        return response(['users'=>$users,'zip'=>$zip,'miles'=>$miles,'nextpage'=>$next_page,
+        'prevpage'=>$prev_page, 'pagegroup'=>$page_group,'currentpage'=>$current_page,'count'=>$count],
+
+            200);
     }
 
     public function zipCodeAutoComplete(Request $request)

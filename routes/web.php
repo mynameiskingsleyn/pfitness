@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Route;
 //    return view('welcome');
 //});
 Route::get('/','HomeController@index')->name('home');
-Route::get('search-users', 'SearchController@index')->name('search-index');
+Route::get('search_users', 'SearchController@index')->name('search-index');
 //Route::get('load-zip-codes', 'SearchController@loadZipCodes')->name('loadZip');
 
 Auth::routes();

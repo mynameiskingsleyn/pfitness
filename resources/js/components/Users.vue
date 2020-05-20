@@ -6,11 +6,11 @@
         <div class="usersDiv" v-else-if="currentUsers">
             <div class="panel panel-default">
                 <div class="panel-heading">
-                    <strong>{{ size }} users  </strong>found within <strong> {{ miles }}</strong> miles of zip {{ currentzip }}
+                    <strong>{{ fcount }} users  </strong>found within <strong> {{ miles }}</strong> miles of zip {{ currentzip }}
                 </div>
                 <div class="panel-body">
                     <ul class="list-group">
-                        <li v-for="user in currentUsers" class="list-group-item">
+                        <li v-for="user in currentU" class="list-group-item">
                             <user :user="user"></user>
                         </li>
                         <!--@foreach($users as $user)-->
@@ -27,6 +27,7 @@
 
                 </div>
             </div>
+            <paginate :dataset="dataset" @updatePages="updatePage"></paginate>
         </div>
         <div class="noUsersDiv" v-else>
             <div class="panel panel-default">
@@ -44,27 +45,45 @@
 </template>
 
 <script>
-    import user from './User.vue';
-    import User from "./User";
+    //import user from './User.vue';
+    import User from "./User.vue";
 
     export default{
         components: {User},
-        props:['usersF','miles','currentzip','size','isLoading'],
+        props:['usersF','miles','currentzip','size','isLoading','fcount','next','prev','groupp','cpage'],
 
         data(){
-           return {
-                //allUsers:this.usersF,
-                //zip:this.miles
-           }
+            return {
+               currentU:this.usersF,
+            }
         },
         computed: {
             gettingData(){
                 return this.isLoading;
             },
             currentUsers(){
-              return this.usersF;
+              return this.currentU;
+            },
+            dataset(){
+                return {
+                    nextp:this.next,
+                    prevp: this.prev,
+                    groupspa: this.groupp,
+                    currentpage: this.cpage
+                };
             }
         },
+        watch:{
+            usersF: function(val){
+                this.currentU = val;
+            }
+          //()
+        },
+        methods: {
+            updatePage(result){
+                this.$emit('pagefullupdate',result);
+            }
+        }
 
     }
 

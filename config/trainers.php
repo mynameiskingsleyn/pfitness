@@ -3,7 +3,7 @@
 return
 [
     'cache_prefix'=>['zipcode'=>'zips:','cacheDB'=>'jsonDB'],
-    'pagination'=>['pagenate'=>true, 'perpage'=>5]
+    'pagination'=>['pagenate'=>true, 'perpage'=>10, 'maxGroup'=>10]
 
 
 

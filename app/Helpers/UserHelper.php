@@ -6,6 +6,7 @@ use App\Helpers\ZipCodeHelper;
 use App\Models\User;
 use App\Traits\CacheTrait;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Session;
 
 class UserHelper extends BaseHelper
 {
@@ -17,7 +18,7 @@ class UserHelper extends BaseHelper
         $this->zipcodeHelper = $zipCodeHelper;
         $this->pagenate = config('trainers.pagination.pagenate');
         $this->perPage = config('trainers.pagination.perpage');
-
+        $this->pageMaxGroup = config('trainers.pagination.maxGroup');
     }
     public function getUsersInZip($zipcode='48326',$miles=5)
     {
@@ -77,16 +78,45 @@ class UserHelper extends BaseHelper
     public function getUsers(Request $request)
     {
         //dd($this);
+
         $miles = $request->get('dist') ?? 2;
 
         $zip = $request->get('zip') ?? '48341';
         $users = $this->getUsersInZip($zip,$miles);
-        if($this->pagenate){
-            $users = $this->pageinateItem($request,$users);
-        }
+        $next_page = null;
+        $prev_page = null;
+        $page_group = null;
+        $reqParams =[];
+        //dd($request->fullUrl());
 
+        if($this->pagenate){
+            if(!$request->has('zip')){
+                $request->request->add(['zip'=>$zip]);
+                $reqParams['zip'] = $zip;
+            }
+            if(!$request->has('dist')){
+                $request->request->add(['dist'=>$miles]);
+                $reqParams['dist'] = $miles;
+            }
+            //$url = $this->rebuildQueryWithPagination($request,[]);
+            //dd($url);
+            $usersInfo = $this->pagenateItem($request,$users);
+            if($usersInfo){
+                //dd($usersInfo);
+                $users = $usersInfo['users'];
+                $next_page = $usersInfo['nextPage'];
+                //dd($next_page);
+                $prev_page = $usersInfo['prevPage'];
+                $page_group = $usersInfo['pageGroup'];
+                $current_page=$usersInfo['currentPage'];
+                $count = $usersInfo['count'];
+            }
+
+        }
+        //dd('here yalfffl');
         $finalUsers = collect($users);
-        return ['users'=>$finalUsers,'zip'=>$zip,'miles'=>$miles];
+        return ['users'=>$finalUsers,'zip'=>$zip,'miles'=>$miles,'next_page'=>$next_page,
+            'prev_page'=>$prev_page,'page_group'=>$page_group,  'count'=>$count,'current_page'=>$current_page];
     }
 
     public function getCacheName($zip,$distance)
@@ -94,55 +124,55 @@ class UserHelper extends BaseHelper
         return $zip.'_users_'.$distance;
     }
 
-    // general cache functions=======
-    public function cacheItem($cacheName, $value)
-    {
-        $this->cacheSet($cacheName,json_encode($value));
-    }
-    public function getCacheItem($cacheName)
-    {
-        $items = $this->cacheGet($cacheName);
-        return json_decode($items,true);
-    }
-    // complex
 
-
-    public function getHCacheItem($cacheName)
-    {
-        $items = json_decode($this->cacheHMGetAll($cacheName));
-        return $items;
-    }
-    public function setHCacheItem($cacheName,$value,$count=null)
-    {
-        $this->cacheHMSet($cacheName,'value',json_encode($value));
-        if($count){
-            $this->cacheHMSet($cacheName,'count',json_encode($count));
-        }
-    }
 
 
 
 
     /// end of cache function s
 
-    public function pageinateItem($request,$users)
+    // start of pagination task
+
+
+    public function addPG($url,$pg=1) // pagegroup is identified by pg
     {
-        $p = $request->get('p');
-        dd($p);
-        dd($request->all());
+        $pattern = '/pg=\d?/';
+        $hasPg = preg_match($pattern,$url);
+        if($hasPg){
+            $newUrl = preg_replace($pattern,'pg='.$pg, $url);
+            //dd('has pg');
+        }
+        else{// add pg
+            $params = ['pg'=>$pg];
+            $newUrl = $this->addParamsUrl($url,$params);
+        }
+
     }
 
-    public function rebuildQueryWithPagination(Request $request,$params=['p'=>1])
+    public function resetPagesGroup()
     {
-        $query = array_merge($request->query(),
-            $params);
-        return url()->current().'?'.http_build_query($query);
+        \Session::forget('user_search_pg');
+    }
+
+
+
+    public function rebuildQueryWithPagination(Request $request,$params=['pa'=>1])
+    {
+
+       $url = $request->Url().'?'.http_build_query(array_merge($request->all(),$params));
+       return $url;
+
+    }
+
+    public function addParamsUrl($url,$params)
+    {
+        return $url.http_build_query($params);
     }
 
     public function requestHasPagination(Request $request)
     {
         $params = $request->query();
-        if(array_key_exists('p',$params))
+        if(array_key_exists('pa',$params))
             return true;
         return false;
     }
@@ -152,6 +182,8 @@ class UserHelper extends BaseHelper
     {
 
          $request->request->add($params);
+         dd($request->fullUrl());
 
     }
+
 }

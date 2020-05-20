@@ -15,7 +15,8 @@
         </div>
         <div class="col-md-8">
             <usersFound :usersF="currentUsers" :miles="currentMiles" :currentzip="currentZip" :size="userSize"
-            :isLoading="loading">
+            :isLoading="loading" :next="np" :prev="pp" :groupp="pgroup" :fcount="scount"
+            v-bind:cpage="currentp" @pagefullupdate="searchUpdated" >
             </usersFound>
         </div>
     </div>
@@ -26,7 +27,7 @@
     import usersFound from './Users.vue';
 
     export default{
-        props: ['zip','miles','susers'],
+        props: ['zip','miles','susers','nextpage','prevpage','pagegroup','uscount','currentpage'],
         components:{userSearchForm,usersFound},
 
         data(){
@@ -36,17 +37,30 @@
                 currentMiles:this.miles,
                 ourdata:false,
                 loading:false,
+                pgroup: this.convertToObject(this.pagegroup),
+                pp: this.prevpage,
+                np: this.nextpage,
+                scount: this.uscount,
+                currentp: this.currentpage
+
                 //sortedUsersD:this.sortUsersByDistance(),
             }
-
         },
         methods:{
             searchUpdated(result){
                 if(result){
+                    //alert('earch update');
+                    //console.log(result);
                     this.loading=false;
                     this.currentUsers = result.users;
                     this.currentZip = result.zip;
-                    this.currentMiles=result.miles
+                    this.currentMiles=result.miles;
+                    this.scount = result.count;
+                    this.currentp = result.currentpage
+                    this.np =result.nextpage;
+                    this.pp =result.prevpage;
+                    this.pg =result.pagegroup;
+                    this.pgroup = this.convertToObject(result.pagegroup);
                 }
 
             },
@@ -70,6 +84,15 @@
             },
             performLoading(){
                 this.loading=true;
+            },
+
+            convertToObject(str){
+                if (typeof str === 'string' || str instanceof String){
+                    // convert to object
+                    var obj = JSON.parse(str);
+                    return obj;
+                }
+                return str;
             }
 
         },
