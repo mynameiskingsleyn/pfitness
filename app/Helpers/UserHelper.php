@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Traits\CacheTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
+use Nahid\JsonQ\Jsonq;
 
 class UserHelper extends BaseHelper
 {
@@ -23,9 +24,11 @@ class UserHelper extends BaseHelper
             'miles'=>config('trainers.defaults.dist'),
             'zipcode'=>config('trainers.default.zip')
         ];
+        $this->maxDist = 100;
     }
     public function getUsersInZip($zipcode='48326',$miles=5)
     {
+
         $startTime = $this->getTime();
         //$this->clearAllCache();
         $distance = $miles ?? 2;
@@ -37,38 +40,39 @@ class UserHelper extends BaseHelper
         }
         $zipcode = $zipcode ?? $this->zipcodeHelper->getCurrentZip();
         if($zipcode){
+
             $cacheName = $this->getCacheName($zipcode,$distance);
             $usersResult = $this->getCacheItem($cacheName);
+            //dd($usersResult);
             if(!$usersResult){
                 $zipsWithinCode = $this->zipcodeHelper->getZipsNear($zipcode,$distance);
                 if($zipsWithinCode){
                     $zips = array_column($zipsWithinCode,'zip');
-                    $users = $this->user->whereIn('zipcode',$zips)->orderBy('lname')->get();
-                    if($users){
+                    // check if inventory is cached...
+                    $inventCacheName = $this->getCacheName($zipcode,$this->maxDist);
+                    //dd($inventCacheName);
+                    $inventUsers = $this->getRawCacheItem($inventCacheName);
+                    if($inventUsers){
+                        //use inventory to create specific search
+                        $users = $this->getUserSearchWithInventory($inventUsers,$zips);
+                        $this->cacheItem($cacheName,$users);
 
-                        //\Log::info('Sorted values below------------------------------->');
-                        $sortStart = $this->getTime();
-                        $result=$users->sortBy(function($value) {
-                            $dist = $value->distance;
-                            $int = filter_var($dist, FILTER_SANITIZE_NUMBER_INT);
-                            $intVal = intval($int);
-                            return intval($intVal);
-                        });
+                        //else create inventory save inventory use it to create specific and save specific cache
+                    }else{
+                        // create inventory and use to create search.
 
-
-                        $newUsers = [];
-                        foreach($result as $aUser){
-                            $newUsers[] = $aUser;
-                        }
-                        $this->cacheItem($cacheName,$newUsers);
-                        $sortEnd = $this->getTime();
-                        $sortComplete = $this->timeDiff($sortStart,$sortEnd);
-                        \Log::debug("time taken to sort users is $sortComplete");
+                        $this->createInventory($zipcode);
+                        $inventUsers = $this->getRawCacheItem($inventCacheName);
+                        $users = $this->getUserSearchWithInventory($inventUsers,$zips);
+                        $this->cacheItem($cacheName,$users);
+                        //dd($users);
 
                     }
 
+
                 }
                 $usersResult = $this->getCacheItem($cacheName);
+                //dd($usersResult);
             }
             $endTime = $this->getTime();
             $completTime = $this->timeDiff($startTime,$endTime);
@@ -83,6 +87,57 @@ class UserHelper extends BaseHelper
 
         return [];
 
+    }
+
+    public function getUserSearchWithInventory($jsonInventory,$zips)
+    {
+        // convert to string and back to json to add table name;
+        $arrayInvent = json_decode($jsonInventory,true);
+        $usersG = ['users'=>$arrayInvent];
+        $data = json_encode($usersG);
+        //dd($data);
+
+        $q = new Jsonq();
+        $users = $q->json($data)
+                    ->from('users')
+                    ->whereIn('zipcode',$zips)
+                    ->get();
+        return $users;
+    }
+    public function createInventory($zipcode)
+    {
+        //dd($zipcode);
+        $cacheName = $this->getCacheName($zipcode,$this->maxDist);
+        //dd($cacheName);
+        $zipsWithinCode = $this->zipcodeHelper->getZipsNear($zipcode,$this->maxDist);
+        $zips = array_column($zipsWithinCode,'zip');
+        //dd($zips);
+        $users = $this->user->whereIn('zipcode',$zips)->orderBy('lname')->get();
+        //dd($users);
+        if($users){
+
+            //\Log::info('Sorted values below------------------------------->');
+            $sortStart = $this->getTime();
+            $result=$users->sortBy(function($value) {
+                $dist = $value->distance;
+                $int = filter_var($dist, FILTER_SANITIZE_NUMBER_INT);
+                $intVal = intval($int);
+                return intval($intVal);
+            });
+
+
+            $newUsers = [];
+            foreach($result as $aUser){
+                $newUsers[] = $aUser;
+            }
+            $this->cacheItem($cacheName,$newUsers);
+            $sortEnd = $this->getTime();
+            $sortComplete = $this->timeDiff($sortStart,$sortEnd);
+            //dd('here cook');
+            //dd($newUsers);
+            \Log::debug("time taken to sort users is $sortComplete");
+
+        }
     }
 
     /**

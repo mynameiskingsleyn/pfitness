@@ -2434,7 +2434,7 @@ __webpack_require__.r(__webpack_exports__);
   data: function data() {
     return {
       cDistance: this.distance,
-      maxNum: this.maxnum ? this.maxnum : 30,
+      maxNum: this.maxnum ? this.maxnum : 50,
       minNum: this.minnum ? this.minnum : 0
     };
   },

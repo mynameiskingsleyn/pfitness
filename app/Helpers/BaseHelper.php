@@ -183,17 +183,24 @@ class BaseHelper
         return $newPage_url;
     }
 
+    /**
+     * @param $items has all items  retrieved
+     * @param $p is page number
+     * @return array
+     * returns on user in a given page;
+     */
     public function getCurrentPageData($items, $p)
     {
         //dd($items);
         $itemPerPage = $this->perPage;
         $item_size = count($items);
-        $start = ($p-1) * $itemPerPage;
-        $end = $start + $itemPerPage;
-        $data = [];
+        $start = ($p-1) * $itemPerPage; //where to start in the items array
+        $end = $start + $itemPerPage;  // where to stop in the items array
+        $data = []; // collection of ite,s
         for($i = $start; $i<$end; $i++)
         {
-            $data[] = $items[$i];
+            if(isset($items[$i])) // check that there is an item at this position
+                $data[] = $items[$i]; //because page can have less items than max per page
         }
         return $data;
     }
@@ -253,6 +260,11 @@ class BaseHelper
     {
         $items = $this->cacheGet($cacheName);
         return json_decode($items,true);
+    }
+
+    public function getRawCacheItem($cacheName)
+    {
+         return $this->cacheGet($cacheName);
     }
     // complex
 
