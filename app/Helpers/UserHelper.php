@@ -26,6 +26,8 @@ class UserHelper extends BaseHelper
     }
     public function getUsersInZip($zipcode='48326',$miles=5)
     {
+        $startTime = $this->getTime();
+        $this->clearAllCache();
         $distance = $miles ?? 2;
         if($distance > 100){
             $distance = 100;
@@ -43,31 +45,34 @@ class UserHelper extends BaseHelper
                     $zips = array_column($zipsWithinCode,'zip');
                     $users = $this->user->whereIn('zipcode',$zips)->orderBy('lname')->get();
                     if($users){
-                        //dd($users);
-                        //$users=$users->sortBy('lname')->sortBy('distance');
-                        //$result=$users->sortBy('distance');
-//                    foreach($users as $user){
-//                        \Log::info($user->distance);
-//                    }
+
                         //\Log::info('Sorted values below------------------------------->');
+                        $sortStart = $this->getTime();
                         $result=$users->sortBy(function($value) {
                             $dist = $value->distance;
                             $int = filter_var($dist, FILTER_SANITIZE_NUMBER_INT);
                             $intVal = intval($int);
                             return intval($intVal);
                         });
+
+
                         $newUsers = [];
                         foreach($result as $aUser){
                             $newUsers[] = $aUser;
                         }
                         $this->cacheItem($cacheName,$newUsers);
+                        $sortEnd = $this->getTime();
+                        $sortComplete = $this->timeDiff($sortStart,$sortEnd);
+                        \Log::debug("time taken to sort users is $sortComplete");
 
-                        //return $newUsers;
                     }
 
                 }
                 $usersResult = $this->getCacheItem($cacheName);
             }
+            $endTime = $this->getTime();
+            $completTime = $this->timeDiff($startTime,$endTime);
+            \Log::debug("time taken to run  all user fetch is $completTime ");
             //dd($usersResult);
             return $usersResult;
 

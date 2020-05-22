@@ -8,9 +8,12 @@ use App\Models\BaseModel;
 
 use App\Models\User;
 
+use App\Traits\CacheTrait;
+
 class Zipcode extends BaseModel
 {
     //
+    use CacheTrait;
     public $currentZip;
 
     protected $table ='zipcodes';
@@ -60,7 +63,10 @@ class Zipcode extends BaseModel
             HAVING (`distance_in_miles` <= ".$radius." AND  `distance_in_miles` >= 0)
             ORDER BY `distance_in_miles` ASC;");
         }
+        //dd($zipCodes);
 
+        // cache distance for feature use
+        $this->cacheZipDist($zipCode,$zipCodes);
 
         return $zipCodes;
     }
@@ -77,16 +83,55 @@ class Zipcode extends BaseModel
 
     public function distanceApart($first,$second)
     {
-
-       // \Log::debug('comparing '.$first.' and '.$second);
+        $cacheName = $this->getZipDistCacheName($first,$second);
+        $distance = $this->getDistFromCache($cacheName);
+        if(!empty($distance) || $distance == 0){
+            return $distance;
+        }
         $firstInfo = $this->where('zip',$first)->first();
         $secondInfo = $this->where('zip',$second)->first();
         $firstLat = $firstInfo->latitude; $firstLon = $firstInfo->longitude;
         $secondLat = $secondInfo->latitude; $secondLon = $secondInfo->longitude;
-
+        \Log::debug("$cacheName is not cached and value is $distance");
         $distance = sqrt(pow(69.1*($firstLat - $secondLat),2) + Pow(69.1 * ($secondLon - $firstLon) * cos($firstLat / 57.3), 2));
-       // \Log::debug("distance between two is $distance");
+        $this->addDistToCache($cacheName,$distance);
         return $distance;
+    }
+
+    public function getZipDistCacheName($firstZip,$secondZip)
+    {
+        $sortArray = [$firstZip,$secondZip];
+        sort($sortArray);
+        //dd($sortArray);
+        $sorted = implode(':',$sortArray);
+        return 'zip_dist:'.$sorted;
+    }
+
+    public function cacheZipDist($currentZip,$coll)
+    {
+        //$check = [];
+        foreach($coll as $aZip){
+            $dist = $aZip->distance_in_miles;
+            $zipcode = $aZip->zip;
+            $cacheName = $this->getZipDistCacheName($currentZip,$zipcode);
+            //dd($cacheName);
+            $this->addDistToCache($cacheName,$dist);
+            //$check[$cacheName] = $this->getDistFromCache($cacheName);
+        }
+        //dd($check);
+
+    }
+
+    public function addDistToCache($cacheName,$dist)
+    {
+        if(empty($this->getDistFromCache($cacheName))){
+            $this->cacheSet($cacheName,$dist);
+        }
+    }
+
+    public function getDistFromCache($cacheName)
+    {
+        return $this->cacheGet($cacheName);
     }
 
 }

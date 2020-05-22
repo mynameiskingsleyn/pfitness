@@ -44,6 +44,7 @@ class BaseHelper
      */
     public function pagenateItem($request,$items=[])
     {
+        $start =$this->getTime();
         if(!$request->has(''))
         $nextPageUrl = null;
         $prevPageUrl = null;
@@ -90,7 +91,9 @@ class BaseHelper
         }else{
             $result = ['users'=>[],'count'=> 0];
         }
-
+        $end = $this->getTime();
+        $timeTaken = $this->timeDiff($start,$end);
+        \Log::debug("Time taken to run pagination is $timeTaken");
         //\Log::debug($result);
         return $result;
     }
@@ -334,7 +337,11 @@ class BaseHelper
      */
     public function timeDiff($first, $second)
     {
-        return $first->diffInSeconds($second);
+        return $first->diffInMilliSeconds($second);
+    }
+    public function clearAllCache()
+    {
+        $this->CacheFlushAll();
     }
 
 
