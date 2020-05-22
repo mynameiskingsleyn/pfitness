@@ -4,14 +4,18 @@
            <loading></loading>
         </div>
         <div class="usersDiv" v-else-if="currentUsers">
+            <span class="pull-right">
+                    <searchform @pageupdate="updatePage" @collectedMatch="paintUsers"
+                    :dataset="dataset"></searchform>
+            </span>
             <div class="panel panel-default">
                 <div class="panel-heading">
                     <strong>{{ fcount }} users  </strong>found within <strong> {{ miles }}</strong> miles of zip {{ currentzip }}
                 </div>
                 <div class="panel-body">
                     <ul class="list-group">
-                        <li v-for="user in currentU" class="list-group-item">
-                            <user :user="user"></user>
+                        <li v-for="(user) in currentU" class="list-group-item">
+                            <user :user="user" :found="inArray(user,'fullname',founditems)"></user>
                         </li>
                         <!--@foreach($users as $user)-->
                         <!--<li class="list-group-item">-->
@@ -47,14 +51,18 @@
 <script>
     //import user from './User.vue';
     import User from "./User.vue";
+    import searchform from "../forms/searchForm.vue";
+
 
     export default{
-        components: {User},
+        components: { User,searchform},
         props:['usersF','miles','currentzip','size','isLoading','fcount','next','prev','groupp','cpage'],
 
         data(){
             return {
                currentU:this.usersF,
+               founditems:[],
+               pages:{}
             }
         },
         computed: {
@@ -71,6 +79,24 @@
                     groupspa: this.groupp,
                     currentpage: this.cpage
                 };
+            },
+            searchInput(){
+                return{
+                    name:'user_search',
+                    page_info: this.cpage,
+                }
+            },
+
+            userInSearch(user){
+                var fullname = user.fullName;
+                if(this.founditems.length){
+                    var found = this.founditems.indexOf(fullname);
+                    console.log(fullname + " compared to array ");
+                    console.log(this.founditems)
+                    return found > -1;
+                }
+                return false;
+
             }
         },
         watch:{
@@ -81,9 +107,16 @@
         },
         methods: {
             updatePage(result){
+                //console.log(result);
+                //alert('here yall');
                 this.$emit('pagefullupdate',result);
+            },
+            paintUsers(items){
+                //alert('painting');
+                this.founditems =items;
             }
         }
+
 
     }
 

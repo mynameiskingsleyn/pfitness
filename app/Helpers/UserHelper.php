@@ -19,6 +19,10 @@ class UserHelper extends BaseHelper
         $this->pagenate = config('trainers.pagination.pagenate');
         $this->perPage = config('trainers.pagination.perpage');
         $this->pageMaxGroup = config('trainers.pagination.maxGroup');
+        $this->defaults = [
+            'miles'=>config('trainers.defaults.dist'),
+            'zipcode'=>config('trainers.default.zip')
+        ];
     }
     public function getUsersInZip($zipcode='48326',$miles=5)
     {
@@ -64,6 +68,7 @@ class UserHelper extends BaseHelper
                 }
                 $usersResult = $this->getCacheItem($cacheName);
             }
+            //dd($usersResult);
             return $usersResult;
 
         }
@@ -72,6 +77,48 @@ class UserHelper extends BaseHelper
 //        });
 
         return [];
+
+    }
+
+    /**
+     * @param $request
+     * @return mixed
+     * camputures matches for user in search input
+     */
+    public function getUsersSearch($request)
+    {
+        $miles = $request->get('dist') ?? $this->defaults['miles'];
+
+        $zip = $request->get('zip') ?? $this->defaults['zipcode'];
+        $users = $this->getUsersInZip($zip,$miles);
+        $search = $request->get('search') ?? '';
+        //dd($search);
+        $search = strtolower($search);
+
+        //dd($users);
+        $usersLocate = $this->findMatches($users,['fullname'],'fullname',$search);
+        //dd($usersLocate);
+        //extract location for creating pages
+        $spots = array_keys($usersLocate);
+        $names = array_values($usersLocate);
+        //generate pages using positons
+        $pagenumbers = $this->getUsersPageNumbers($users,$spots);
+        $url = $request->fullUrl();
+        //dd($url);
+        // remove _search from url
+        $url = str_replace('_search','',$url);
+        //remove search item from url
+        $pattern = '/(&search=\S*)(&{1}\S*)/';
+        $url = preg_replace($pattern,'$2',$url);
+        $pageUrls = [];
+        foreach($pagenumbers as $page ){
+            $pageUrls[$page] = $this->updatePageNum($url,$page);
+        }
+        return [
+            'items'=>$names,
+            'pages'=>$pageUrls
+        ];
+
 
     }
 
@@ -104,11 +151,11 @@ class UserHelper extends BaseHelper
             if($usersInfo){
                 //dd($usersInfo);
                 $users = $usersInfo['users'];
-                $next_page = $usersInfo['nextPage'];
+                $next_page = isset($usersInfo['nextPage'])? $usersInfo['nextPage'] :'';
                 //dd($next_page);
-                $prev_page = $usersInfo['prevPage'];
-                $page_group = $usersInfo['pageGroup'];
-                $current_page=$usersInfo['currentPage'];
+                $prev_page = isset($usersInfo['prevPage']) ? $usersInfo['prevPage'] :'';
+                $page_group = isset($usersInfo['pageGroup']) ? $usersInfo['pageGroup'] : [];
+                $current_page=isset($usersInfo['currentPage'])?$usersInfo['currentPage']:'';
                 $count = $usersInfo['count'];
             }
 
@@ -119,9 +166,9 @@ class UserHelper extends BaseHelper
             'prev_page'=>$prev_page,'page_group'=>$page_group,  'count'=>$count,'current_page'=>$current_page];
     }
 
-    public function getCacheName($zip,$distance)
+    public function getCacheName($zip,$distance,$jobCode='')
     {
-        return $zip.'_users_'.$distance;
+        return $zip.'_users_'.$distance.'_'.$jobCode;
     }
 
 
@@ -154,15 +201,6 @@ class UserHelper extends BaseHelper
         \Session::forget('user_search_pg');
     }
 
-
-
-    public function rebuildQueryWithPagination(Request $request,$params=['pa'=>1])
-    {
-
-       $url = $request->Url().'?'.http_build_query(array_merge($request->all(),$params));
-       return $url;
-
-    }
 
     public function addParamsUrl($url,$params)
     {

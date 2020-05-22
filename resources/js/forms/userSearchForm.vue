@@ -26,9 +26,11 @@
 <script>
     import zip from './formInputs/zipInput.vue';
     import miles from './formInputs/distanceInput.vue';
+    import collection from '../mixins/collection';
     export default {
         props: ['currentzip','currentdistance'],
         components: { zip,miles },
+        mixins:[collection],
         data(){
             return{
                 initDist:this.currentdistance,
@@ -74,8 +76,8 @@
 
                if(this.changedInput()){
                    this.$emit('processing');
-                   axios.get('/api/search_users?zip='+this.zipCode+'&dist='+this.cdistance)
-                       .then(this.refresh)
+                   var url = '/api/search_users?zip='+this.zipCode+'&dist='+this.cdistance;
+                   this.get(url);
 
                }
             },

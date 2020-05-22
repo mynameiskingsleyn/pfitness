@@ -48,10 +48,16 @@ class BaseHelper
         $nextPageUrl = null;
         $prevPageUrl = null;
         $result = [];
-        $p = $request->get('pa');
+        $p = $request->get('pa')?? 1;
         $np = $p+1;
         $pp =($p-1 > 0) ? $p-1 :'';
         $cPage = $this->rebuildQueryWithPagination($request,[]);
+        if(!$request->has('pa')){
+            $cPage = $this->rebuildQueryWithPagination($request);
+        }
+
+        //dd('here');
+        //dd($cPage);
         if($items){
             $count = count($items);
             $hasNext = $this->hasNextPage($items,$p);
@@ -130,6 +136,14 @@ class BaseHelper
         return $pageGroup;
     }
 
+    public function rebuildQueryWithPagination($request,$params=['pa'=>1])
+    {
+
+        $url = $request->Url().'?'.http_build_query(array_merge($request->all(),$params));
+        return $url;
+
+    }
+
     public function hasNextPage($items,$p)
     {
         $size = $this->perPage;
@@ -179,6 +193,40 @@ class BaseHelper
             $data[] = $items[$i];
         }
         return $data;
+    }
+
+    public function getUsersPageNumbers($items,$spots)
+    {
+        $pageNumbers = [];
+        //dd($spots);
+        $itemPerPage = $this->perPage;
+        $items_size = count($items);
+        $numbOfPages = intval($items_size/$itemPerPage);
+        //dd($numbOfPages);
+        $mapper = [];
+        $counter = 1;
+        for($k=0;$k< $numbOfPages;$k++){
+            $pageNum= $k+1;
+            $start = $k * $itemPerPage;
+            $end = $start + $itemPerPage;
+            $grouped = [];
+
+            for($i=$start; $i<$end; $i++){
+                array_push($grouped,$i);
+            }
+            $mapper[$pageNum] = $grouped;
+        }
+        //dd($mapper);
+        $spotPages =[];
+        foreach($spots as $spot){
+            foreach($mapper as $key=> $map)
+            {
+                if(in_array($spot,$map)){
+                    array_push($spotPages,$key);
+                }
+            }
+        }
+        return array_unique($spotPages);
     }
 
     public function getNumberOfPages($items)
@@ -246,6 +294,47 @@ class BaseHelper
         }
         return $url;
 
+    }
+
+    /**
+     * @param array $group group of items to search through
+     * @param array $keys  group of keys to search for matches
+     * @param $returnname  what to return to api for api match front end. full name
+     * @return mixed
+     */
+    public function findMatches($group=[],$keys=[],$returnname,$search='Searching')
+    {
+        //dd($search);
+        $matchedGroup = [];
+        foreach($group as $key=>$anItem){
+            foreach($keys as $look){
+                if(isset($group[$key][$look])){
+                    if(strpos($group[$key][$look],$search) !== False){
+                        $matchedGroup[$key]= $group[$key][$returnname];
+                    }
+                }
+            }
+        }
+        return $matchedGroup;
+    }
+
+    /**
+     * @return \Carbon\Carbon
+     * geting current time
+     */
+    public function getTime(){
+        return \Carbon\Carbon::now();
+    }
+
+    /**
+     * @param $first
+     * @param $second
+     * @return mixed
+     * returns difference between time.
+     */
+    public function timeDiff($first, $second)
+    {
+        return $first->diffInSeconds($second);
     }
 
 

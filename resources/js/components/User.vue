@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div v-bind:class="{danger_found: found}">
         <a href="">
             {{ userFName }} {{ userLName }}
         </a>
@@ -11,7 +11,7 @@
 <script>
 
     export default{
-        props:['user'],
+        props:['user','found'],
 
         data(){
             return{
