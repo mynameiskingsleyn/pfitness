@@ -27,7 +27,7 @@ class UserHelper extends BaseHelper
     public function getUsersInZip($zipcode='48326',$miles=5)
     {
         $startTime = $this->getTime();
-        $this->clearAllCache();
+        //$this->clearAllCache();
         $distance = $miles ?? 2;
         if($distance > 100){
             $distance = 100;
