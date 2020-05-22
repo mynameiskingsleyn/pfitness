@@ -30,8 +30,10 @@
 </template>
 
 <script>
+    import collection from '../mixins/collection';
     export default {
         props:['dataset'],
+        mixins:[collection],
         data(){
             return {
 
@@ -81,8 +83,9 @@
             getPage(url){
                 //console.log(url);
                 this.$emit('processing');
-                axios.get(url)
-                    .then(this.refresh)
+                this.get(url);
+                // axios.get(url)
+                //     .then(this.refresh)
 
             },
 

@@ -39,4 +39,15 @@ class MainController extends Controller
 
         return null;
     }
+
+    public function apiCheck(Request $request)
+    {
+        $isApi = $this->userHelper->isApi($request);
+        if(!$isApi){
+            $url = $request->fullUrl();
+            $newUrl = $this->userHelper->addApiToUrl($url);
+            return $newUrl;
+        }
+        return null;
+    }
 }

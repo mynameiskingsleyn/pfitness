@@ -24,7 +24,7 @@ class User extends Authenticatable
 
     protected $distanceFromZip;
 
-    protected $appends = ['distance'];
+    protected $appends = ['distance','fullname'];
     /**
      * The attributes that should be hidden for arrays.
      *
@@ -52,6 +52,11 @@ class User extends Authenticatable
     public function getDistanceAttribute()
     {
         return $this->DistanceFromZip();
+    }
+
+    public function getFullnameAttribute()
+    {
+        return $this->fname.' '.$this->lname;
     }
 
 

@@ -31,7 +31,7 @@ class SearchController extends MainController
         //dd($pagenate);
         $url = $this->pagenationCheck($request);
         if($url){
-            return redirect($url);
+            //return redirect($url);
         }
         //dd('continue after redirection');
         //
@@ -54,6 +54,7 @@ class SearchController extends MainController
        // dd($result);
         //dd($pageGroup);
         return view('search.search',compact('users','zip','miles','nextPage','prevPage','count','pageGroup','currentPage'));
+        //return view('search.search',compact('users','zip','miles','nextPage','prevPage','count','pageGroup','currentPage'));
     }
 
     /**  loads zipcode db */

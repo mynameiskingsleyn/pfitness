@@ -21,3 +21,5 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 Route::get('auto_complete_zip','Api\SearchController@zipCodeAutoComplete')->name('zip_auto_complete');
 
 Route::get('search_users', 'Api\SearchController@index')->name('api-search-index');
+//sendGetUrl:"http://trainme.test/api/search_users_search?zip=48341&dist=2&pa=1&search=Search"
+Route::get('search_users_search','Api\SearchController@search')->name('api-search-search');

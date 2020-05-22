@@ -20,8 +20,36 @@ try {
  */
 
 window.axios = require('axios');
+window.vue = require('vue');
 
-window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
+window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest'
+
+let pluralization = require('./plurarization');
+let fitness = require('./fitness');
+
+window.vue.prototype.pluralize = function(revert,count)
+{
+    //alert(revert+' coun is '+count);
+    if(count < 2)
+        return pluralization['getSingular'](revert);
+    return revert;
+}
+
+window.vue.prototype.inArray= function(item,keyit,group){
+
+    for(var prop in item) {
+        if(prop == keyit){
+            ///console.log('match prop is '+prop);
+            var value = item[prop];
+
+            return fitness.itemInArray(value,group);
+        }
+       // console.log('property is '+prop);
+        //if(item.hasOwnProperty(prop)){ }
+            //console.log('property is '+prop);
+    }
+
+}
 
 /**
  * Echo exposes an expressive API for subscribing to channels and listening
