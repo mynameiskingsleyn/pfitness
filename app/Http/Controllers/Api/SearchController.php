@@ -45,6 +45,22 @@ class SearchController extends MainController
             200);
     }
 
+    public function search(Request $request)
+    {
+
+        $result =['items'=>[],'pages'=>[]];
+
+        if($request->has('search') && $request->get('search')){
+            $result = $this->userHelper->getUsersSearch($request);
+        }
+        //dd($result);
+        $items = isset($result['items']) ? $result['items'] :[];
+        $pages =isset($result['pages']) ? $result['pages'] : [];
+        //return response($result,200);
+        return response(['items'=>$items,'pages'=>$pages],200);
+
+    }
+
     public function zipCodeAutoComplete(Request $request)
     {
         $zip = $request->get('zipPart');
