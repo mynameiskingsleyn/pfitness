@@ -100,7 +100,7 @@
             extractPageNum(page){
                 //help  --> https://www.w3schools.com/jsref/tryit.asp?filename=tryjsref_match_regexp
                 var res = page.match(/pa=\d{0,10}/g);
-                if(res.length > 0)
+                if(res && res.length > 0)
                 {
                     var dign = res[0];
                     var fin = dign.match(/\d+/g);

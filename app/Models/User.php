@@ -6,11 +6,13 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use App\Models\Zipcode;
+use App\Traits\CacheTrait;
 
 
 class User extends Authenticatable
 {
     use Notifiable;
+    use CacheTrait;
 
 
     /**
@@ -24,7 +26,7 @@ class User extends Authenticatable
 
     protected $distanceFromZip;
 
-    protected $appends = ['distance','fullname'];
+    protected $appends = ['distance','fullname','preferred'];
     /**
      * The attributes that should be hidden for arrays.
      *
@@ -77,14 +79,47 @@ class User extends Authenticatable
         $this->distanceFromZip = $this->DistanceFromZip();
     }
 
-    public function getPrefferedAttribute()
+    public function PreferredUser()
     {
+        return $this->hasOne(PrefferedUser::class,'user_id');
+    }
+
+    public function getPreferredAttribute()
+    {
+        //return false;
+        $cacheName = $this->getPrefCacheName();
+        $checker = $this->getPrefCacheItem($cacheName);
+        if($checker === null){
+            $now = \Carbon\Carbon::now();
+            $preff = $this->PreferredUser;
+            if(is_object($preff)) {
+                $expire = \Carbon\Carbon::create($preff->expire_date);
+                $check = $now->diffInDays($expire);
+                $checker = ($check <= 0) ? 'true': 'false';
+            }else {
+                $checker = 'false';
+            }
+            $this->cacheSet($cacheName,$checker);
+        }
+        //dd($checker);
+        return $checker;
+
 
     }
 
     public function path()
     {
         return '/testing';
+    }
+
+    public function getPrefCacheName()
+    {
+        return $this->id.'prefered';
+    }
+
+    public function getPrefCacheItem($cacheName)
+    {
+        return $this->cacheGet($cacheName);
     }
 
 

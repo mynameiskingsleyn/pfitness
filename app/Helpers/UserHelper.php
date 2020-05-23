@@ -49,7 +49,11 @@ class UserHelper extends BaseHelper
                 if($zipsWithinCode){
                     $zips = array_column($zipsWithinCode,'zip');
                     // check if inventory is cached...
-                    $inventCacheName = $this->getCacheName($zipcode,$this->maxDist);
+                    $findCacheName = $this->findParentInventory($zipcode,$distance);
+                    $keys = array_keys($findCacheName);
+                    $dist = $findCacheName[$keys[0]];
+                    $inventCacheName = $keys[0];
+                    //$inventCacheName = $this->getCacheName($zipcode,$this->maxDist);
                     //dd($inventCacheName);
                     $inventUsers = $this->getRawCacheItem($inventCacheName);
                     if($inventUsers){
@@ -61,7 +65,7 @@ class UserHelper extends BaseHelper
                     }else{
                         // create inventory and use to create search.
 
-                        $this->createInventory($zipcode);
+                        $this->createInventory($zipcode,$inventCacheName,$dist);
                         $inventUsers = $this->getRawCacheItem($inventCacheName);
                         $users = $this->getUserSearchWithInventory($inventUsers,$zips);
                         $this->cacheItem($cacheName,$users);
@@ -104,24 +108,33 @@ class UserHelper extends BaseHelper
                     ->get();
         return $users;
     }
-    public function createInventory($zipcode)
+    public function createInventory($zipcode,$cacheName,$dist)
     {
-        //dd($zipcode);
-        $cacheName = $this->getCacheName($zipcode,$this->maxDist);
-        //dd($cacheName);
-        $zipsWithinCode = $this->zipcodeHelper->getZipsNear($zipcode,$this->maxDist);
+        //dd($dist);
+        //$cacheName = $this->getCacheName($zipcode,$this->maxDist);
+        \Log::debug("inventory cache used is $cacheName and distance is $dist");
+        $zipsWithinCode = $this->zipcodeHelper->getZipsNear($zipcode,$dist);
         $zips = array_column($zipsWithinCode,'zip');
         //dd($zips);
-        $users = $this->user->whereIn('zipcode',$zips)->orderBy('lname')->get();
+        $users = $this->user->whereIn('zipcode',$zips)->get();
+        //dd($users);
         //dd($users);
         if($users){
-
+            //dd($users);
             //\Log::info('Sorted values below------------------------------->');
             $sortStart = $this->getTime();
+            //$result = $users;
             $result=$users->sortBy(function($value) {
                 $dist = $value->distance;
+                $pref = $value->preferred;
                 $int = filter_var($dist, FILTER_SANITIZE_NUMBER_INT);
                 $intVal = intval($int);
+
+                if($pref =='true'){
+                    $intVal = $intVal - 50;
+                    //dd($intVal);
+                }
+
                 return intval($intVal);
             });
 
@@ -130,6 +143,7 @@ class UserHelper extends BaseHelper
             foreach($result as $aUser){
                 $newUsers[] = $aUser;
             }
+            //dd($newUsers);
             $this->cacheItem($cacheName,$newUsers);
             $sortEnd = $this->getTime();
             $sortComplete = $this->timeDiff($sortStart,$sortEnd);
@@ -281,6 +295,26 @@ class UserHelper extends BaseHelper
 
          $request->request->add($params);
          dd($request->fullUrl());
+
+    }
+
+    public function findParentInventory($zipcode,$dist)
+    {
+        $start = $dist + 1;
+        $end = $dist + 10;
+        if($end > $this->maxDist) $end = $this->maxDist;
+        $cacheName = $this->getCacheName($zipcode,$start);
+        $found = [$cacheName=>$dist];
+        for($i = $this->maxDist; $i >= $end; $i--){
+            $cacheName = $this->getCacheName($zipcode,$i);
+            $found = [$cacheName=>$i];
+
+            $inventory = $this->getRawCacheItem($cacheName);
+            if(!empty($inventory)){
+                break;
+            }
+        }
+        return $found;
 
     }
 

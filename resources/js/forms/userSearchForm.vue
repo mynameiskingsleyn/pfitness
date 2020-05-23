@@ -9,7 +9,7 @@
                 </div>
                 <div class="row">
                     <div class="col-12">
-                        <miles :distance="this.cdistance" :maxnum="29" @mileschanged="updateDistance"></miles>
+                        <miles :distance="this.cdistance" :maxnum="99" @mileschanged="updateDistance"></miles>
                     </div>
                 </div>
                 <div class="row">

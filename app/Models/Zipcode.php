@@ -66,7 +66,8 @@ class Zipcode extends BaseModel
         //dd($zipCodes);
 
         // cache distance for feature use
-        $this->cacheZipDist($zipCode,$zipCodes);
+        if($zipCodes)
+            $this->cacheZipDist($zipCode,$zipCodes);
 
         return $zipCodes;
     }

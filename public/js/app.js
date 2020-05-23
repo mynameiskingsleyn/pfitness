@@ -2034,7 +2034,7 @@ __webpack_require__.r(__webpack_exports__);
       //help  --> https://www.w3schools.com/jsref/tryit.asp?filename=tryjsref_match_regexp
       var res = page.match(/pa=\d{0,10}/g);
 
-      if (res.length > 0) {
+      if (res && res.length > 0) {
         var dign = res[0];
         var fin = dign.match(/\d+/g);
         return fin[0];
@@ -39187,7 +39187,7 @@ var render = function() {
             { staticClass: "col-12" },
             [
               _c("miles", {
-                attrs: { distance: this.cdistance, maxnum: 29 },
+                attrs: { distance: this.cdistance, maxnum: 99 },
                 on: { mileschanged: _vm.updateDistance }
               })
             ],
