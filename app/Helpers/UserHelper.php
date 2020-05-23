@@ -30,7 +30,7 @@ class UserHelper extends BaseHelper
     {
 
         $startTime = $this->getTime();
-        //$this->clearAllCache();
+        $this->clearAllCache();
         $distance = $miles ?? 2;
         if($distance > 100){
             $distance = 100;
@@ -117,41 +117,12 @@ class UserHelper extends BaseHelper
         $zips = array_column($zipsWithinCode,'zip');
         //dd($zips);
         $users = $this->user->whereIn('zipcode',$zips)->get();
-        //dd($users);
-        //dd($users);
         if($users){
-            //dd($users);
-            //\Log::info('Sorted values below------------------------------->');
-            $sortStart = $this->getTime();
-            //$result = $users;
-            $result=$users->sortBy(function($value) {
-                $dist = $value->distance;
-                $pref = $value->preferred;
-                $int = filter_var($dist, FILTER_SANITIZE_NUMBER_INT);
-                $intVal = intval($int);
-
-                if($pref =='true'){
-                    $intVal = $intVal - 50;
-                    //dd($intVal);
-                }
-
-                return intval($intVal);
-            });
-
-
-            $newUsers = [];
-            foreach($result as $aUser){
-                $newUsers[] = $aUser;
-            }
-            //dd($newUsers);
+            $newUsers = $this->sortUsers($users);
             $this->cacheItem($cacheName,$newUsers);
-            $sortEnd = $this->getTime();
-            $sortComplete = $this->timeDiff($sortStart,$sortEnd);
-            //dd('here cook');
-            //dd($newUsers);
-            \Log::debug("time taken to sort users is $sortComplete");
-
         }
+
+
     }
 
     /**
@@ -316,6 +287,44 @@ class UserHelper extends BaseHelper
         }
         return $found;
 
+    }
+
+    public function sortUsers($users)
+    {
+        if($users){
+            //dd($users);
+            //\Log::info('Sorted values below------------------------------->');
+            $sortStart = $this->getTime();
+            //$result = $users;
+            $result=$users->sortBy(function($value) {
+                $dist = $value->distance;
+                $pref = $value->preferred;
+                $int = filter_var($dist, FILTER_SANITIZE_NUMBER_INT);
+                $intVal = intval($int);
+
+                if($pref =='true'){
+                    $intVal = $intVal - 50;
+                    //dd($intVal);
+                }
+
+                return intval($intVal);
+            });
+
+
+            $newUsers = [];
+            foreach($result as $aUser){
+                $newUsers[] = $aUser;
+            }
+            //dd($newUsers);
+            $sortEnd = $this->getTime();
+            $sortComplete = $this->timeDiff($sortStart,$sortEnd);
+            //dd('here cook');
+            //dd($newUsers);
+            \Log::debug("time taken to sort users is $sortComplete");
+            return $newUsers;
+
+        }
+        return [];
     }
 
 }
