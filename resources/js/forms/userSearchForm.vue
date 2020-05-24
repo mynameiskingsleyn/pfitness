@@ -9,7 +9,7 @@
                 </div>
                 <div class="row">
                     <div class="col-12">
-                        <miles :distance="this.cdistance" :maxnum="99" @mileschanged="updateDistance"></miles>
+                        <miles :distance="this.cdistance" :maxnum="150" @mileschanged="updateDistance"></miles>
                     </div>
                 </div>
                 <div class="row">
@@ -76,7 +76,7 @@
 
                if(this.changedInput()){
                    this.$emit('processing');
-                   var url = '/api/search_users?zip='+this.zipCode+'&dist='+this.cdistance;
+                   var url = '/api/search_users?zip='+this.zipCode+'&dist='+this.cdistance+'&pa=1';
                    this.get(url);
 
                }

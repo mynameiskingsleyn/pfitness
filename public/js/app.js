@@ -2073,7 +2073,7 @@ __webpack_require__.r(__webpack_exports__);
       userFName: this.user.fname,
       userLName: this.user.lname,
       fullName: this.user.fname + ' ' + this.user.lname,
-      distance: this.user.distance
+      distance: this.formatDistance(this.user.distance)
     };
   },
   watch: {
@@ -2081,7 +2081,12 @@ __webpack_require__.r(__webpack_exports__);
       this.userFName = val.fname;
       this.userLName = val.lname;
       this.fullName = val.fname + ' ' + val.lname;
-      this.distance = val.distance;
+      this.distance = this.formatDistance(val.distance);
+    }
+  },
+  methods: {
+    formatDistance: function formatDistance(dist) {
+      return dist.toFixed(2);
     }
   }
 });
@@ -2772,7 +2777,7 @@ __webpack_require__.r(__webpack_exports__);
 
       if (this.changedInput()) {
         this.$emit('processing');
-        var url = '/api/search_users?zip=' + this.zipCode + '&dist=' + this.cdistance;
+        var url = '/api/search_users?zip=' + this.zipCode + '&dist=' + this.cdistance + '&pa=1';
         this.get(url);
       }
     },
@@ -39187,7 +39192,7 @@ var render = function() {
             { staticClass: "col-12" },
             [
               _c("miles", {
-                attrs: { distance: this.cdistance, maxnum: 99 },
+                attrs: { distance: this.cdistance, maxnum: 150 },
                 on: { mileschanged: _vm.updateDistance }
               })
             ],

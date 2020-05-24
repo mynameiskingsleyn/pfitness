@@ -18,7 +18,7 @@
                 userFName:this.user.fname,
                 userLName: this.user.lname,
                 fullName: this.user.fname+' '+this.user.lname,
-                distance: this.user.distance
+                distance: this.formatDistance(this.user.distance)
             }
         },
         watch:{
@@ -26,9 +26,15 @@
                 this.userFName=val.fname
                 this. userLName= val.lname
                 this.fullName=val.fname+' '+val.lname
-                this.distance = val.distance
+                this.distance = this.formatDistance(val.distance)
+            }
+        },
+        methods: {
+            formatDistance(dist){
+                return dist.toFixed(2);
             }
         }
+
 
     }
 </script>
