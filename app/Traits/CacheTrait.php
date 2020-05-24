@@ -15,6 +15,11 @@ trait CacheTrait
 
     }
 
+    public function cacheDelete($key)
+    {
+        return Redis::del($key);
+    }
+
     public function isCacheExists($rKey)
     {
         return Redis::exists($rKey);
@@ -33,9 +38,13 @@ trait CacheTrait
 
     public function bulkDelete($key)
     {
+
+        \Log::debug(Redis::keys('my_business_database_*'));
         $this->tmp_key_chunk = $key;
         Redis::pipeline(function($pipe){
+            \Log::debug("bulk clearing $this->tmp_key_chunk");
            foreach(Redis::keys($this->tmp_key_chunk.'*') as $key){
+               \Log::info("deleting cache name $key");
                $pipe->del($key);
            }
         });

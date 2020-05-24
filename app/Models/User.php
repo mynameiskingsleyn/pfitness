@@ -51,6 +51,11 @@ class User extends Authenticatable
 
     }
 
+    public function Zip()
+    {
+        return $this->belongsTo('\App\Models\Zipcode','zip','zipcode');
+    }
+
     public function getDistanceAttribute()
     {
         return $this->DistanceFromZip();
@@ -114,7 +119,7 @@ class User extends Authenticatable
 
     public function getPrefCacheName()
     {
-        return $this->id.'prefered';
+        return $this->id.'_prefered';
     }
 
     public function getPrefCacheItem($cacheName)

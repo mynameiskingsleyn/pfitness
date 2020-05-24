@@ -84,5 +84,14 @@ class SearchController extends MainController
 
     }
 
+    public function fetchzips()
+    {
+
+        $occupied = $this->userHelper->getAllOcupiedzips();
+        //dd($occupied);
+        $this->userHelper->createInventoryForZips($occupied);
+
+    }
+
 
 }

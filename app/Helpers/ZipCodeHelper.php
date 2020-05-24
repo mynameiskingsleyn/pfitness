@@ -96,5 +96,20 @@ class ZipCodeHelper extends BaseHelper
        return $this->zipcodeModel->where('zip','LIKE',"$zip%")->pluck('zip');
     }
 
+    public function getOcupied()
+    {
+        //\DB::enableQueryLog();
+        $ocupied = $this->zipcodeModel->has('Users','>', 5)->with('Users')->take(100)
+        ->get('zip');
+       // \Log::debug(\DB::getQueryLog());
+        $zips = [];
+//        foreach($ocupied as $home){
+//            $zips[] =  $home->zip;
+//        }
+        $zips = ['48321','48326','48341','45005','45004','45006'];
+        return $zips;
+
+    }
+
 
 }

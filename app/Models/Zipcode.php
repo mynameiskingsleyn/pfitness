@@ -36,6 +36,11 @@ class Zipcode extends BaseModel
 
     }
 
+    public function Users()
+    {
+        return $this->hasMany(User::class,'zipcode','zip');
+    }
+
     public function setCurrentZip($zipCode)
     {
         $this->currentZip = $zipCode;

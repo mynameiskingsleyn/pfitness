@@ -15,7 +15,9 @@ class Kernel extends ConsoleKernel
     protected $commands = [
         //
         '\App\Console\Commands\CronTest',
-        '\App\Console\Commands\CronEtlLoad'
+        '\App\Console\Commands\CronEtlLoad',
+        //'\App\Console\Cammands\CronCacheClear',
+        //'\App\Console\Cammands\CronCacheZips'
     ];
 
     /**

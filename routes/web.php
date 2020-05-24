@@ -24,3 +24,6 @@ Auth::routes();
 
 Route::get('/home', 'HomeController@index')->name('home');
 Route::get('/localization/{locale}', 'LocalizationController@index')->name('localize');
+
+Route::get('/fetchzips','SearchController@fetchzips');
+
