@@ -53,6 +53,52 @@ class Zipcode extends BaseModel
 
     }
 
+    public function getZipCodesWithUsers_copy($zipCode,$radius)
+    {
+        $zipCodes=null;
+        $currentZip = $this->getZipInfo($zipCode);
+        //dd($currentZip);
+        if($currentZip) {
+            $lat = $currentZip->latitude;
+            $lon = $currentZip->longitude; //dd($lon);
+            $users = \DB::select("SELECT distinct(zc.zip), us.id,us.fname,us.lname,us.email,us.zipcode,
+             us.city,us.state,us.country,
+            SQRT(POWER(69.1 * (zc.latitude - ".$lat."), 2) + POWER(69.1 * (".$lon." - zc.longitude) * COS(zc.latitude / 57.3), 2)) AS `distance`
+            FROM `".$this->table."` AS zc
+            LEFT JOIN `users` AS us on us.zipcode = zc.zip
+            HAVING (`distance` <= ".$radius." AND  `distance` >= 0)
+            ORDER BY `distance` ASC;");
+        }
+        return $users;
+    }
+
+    public function getZipCodesWithUsers($zipCode,$radius)
+    {
+        $zipCodes=null;
+        $currentZip = $this->getZipInfo($zipCode);
+        //dd($currentZip);
+        if($currentZip) {
+            $lat = $currentZip->latitude;
+            $lon = $currentZip->longitude; //dd($lon);
+
+
+
+            $zips = Zipcode::SelectRaw("Select distinct(zipcodes.zip),
+            SQRT(POWER(69.1 * (zipcodes.latitude - ".$lat."), 2) + POWER(69.1 * (".$lon." - zipcodes.longitude) * COS(zipcodes.latitude / 57.3), 2)) AS `distance`
+            HAVING (`distance` <= ".$radius." AND  `distance` >= 0)
+            ORDER BY `distance` ASC;")->get();
+
+//            $users = \DB::select("SELECT distinct(zc.zip), us.id,us.fname,us.lname,us.email,us.zipcode,
+//             us.city,us.state,us.country,
+//            SQRT(POWER(69.1 * (zc.latitude - ".$lat."), 2) + POWER(69.1 * (".$lon." - zc.longitude) * COS(zc.latitude / 57.3), 2)) AS `distance`
+//            FROM `".$this->table."` AS zc
+//            LEFT JOIN `users` AS us on us.zipcode = zc.zip
+//            HAVING (`distance` <= ".$radius." AND  `distance` >= 0)
+//            ORDER BY `distance` ASC;");
+        }
+        return $zips;
+    }
+
     public function getZipCodes($zipCode,$radius)
     {
 

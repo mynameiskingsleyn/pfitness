@@ -39,6 +39,12 @@ class ZipCodeHelper extends BaseHelper
         return $saved;
     }
 
+    public function getUsersNearZipcode()
+    {
+        $usersNear = $this->zipcodeModel->getZipCodesWithUsers($this->zipCode,$this->radius);
+        return $usersNear;
+    }
+
     public function getCachedZipCodesNearZipcode($zipCache)
     {
 
@@ -47,7 +53,8 @@ class ZipCodeHelper extends BaseHelper
         $zipsNearJson = $this->cacheGet($zipCache);
        // dd($zipsNearJson);
         if(empty($zipsNearJson)){
-            $zipsNear = $this->zipcodeModel->getZipCodes($this->zipCode,$this->radius);
+            //$zipsNear = $this->zipcodeModel->getZipCodes($this->zipCode,$this->radius);
+            $zipsNear = $this->zipcodeModel->getZipCodesWithUsers($this->zipCode,$this->radius);
             //dd($zipsNear);
             if(!empty($zipsNear)){
                 $this->cacheSet($zipCache,json_encode($zipsNear));
@@ -81,6 +88,12 @@ class ZipCodeHelper extends BaseHelper
     public function setCurrentZip($zipcode)
     {
         Session::put('current_zip',$zipcode);
+    }
+
+    public function getUsersNearMe($zipcode,$miles){
+        $this->getZipNearCacheKey($zipcode,$miles);
+        $value = $this->getUsersNearZipcode();
+        return $value;
     }
 
     public function getZipsNear($zipcode,$miles)

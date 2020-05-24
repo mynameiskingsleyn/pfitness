@@ -47,40 +47,42 @@ class UserHelper extends BaseHelper
             $usersResult = $this->getCacheItem($cacheName);
             //dd($usersResult);
             if(!$usersResult){
-                $zipsWithinCode = $this->zipcodeHelper->getZipsNear($zipcode,$distance);
-                if($zipsWithinCode) {
-                    $zips = array_column($zipsWithinCode, 'zip');
-                    $pInventory = $this->findAnInventory($zipcode,$distance);
-                    if(isset($pInventory['cacheName'])){ // possible inventory found..
-                        // check whether child or parent
-                        $isParent = $pInventory['parent'];
-
-                        if($isParent){// not much work needed use parent to capture
-                            $jsonInventory = $this->getRawCacheItem($pInventory['cacheName']);
-                            $newUsers = $this->getUserSearchWithInventory($jsonInventory,$zips);
-                            $this->cacheItem($cacheName,$newUsers);
-                        }else{
-                            //dd('need to create from child');
-                            $childZips = $pInventory['zips'];
-                            $childInventory = $this->getCacheItem($pInventory['cacheName']);
-                            $zipsOver = array_diff($zips,$childZips);
-                            $newInventory = $this->getUserFromDB($zipsOver);
-                            //$newInventory = json_decode(json_encode($newInventory),true);
-                            $parentInventory = array_merge($childInventory,$newInventory);
-                            $itemsCount = count($parentInventory);
-                            $cacheStart = $this->getTime();
-                            $this->cacheItem($cacheName,$parentInventory);
-                            $cacheEnd = $this->getTime();
-                            $cacheComplete = $this->timeDiff($cacheStart,$cacheEnd);
-                            //\Log::debug("time taken for caching $cacheName with $itemsCount items is $cacheComplete");
-                        }
-
-                    }else{// no inventory treat as first search on zip.
-                        $this->createInventory($zipcode,$cacheName,$distance,$zips);
-                    }
+                $usersWithinCode = $this->zipcodeHelper->getUsersNearMe($zipcode,$distance);
+                dd($usersWithinCode);
+                if($usersWithinCode) {
+//                    $zips = array_column($zipsWithinCode, 'zip');
+//                    $pInventory = $this->findAnInventory($zipcode,$distance);
+//                    if(isset($pInventory['cacheName'])){ // possible inventory found..
+//                        // check whether child or parent
+//                        $isParent = $pInventory['parent'];
+//
+//                        if($isParent){// not much work needed use parent to capture
+//                            $jsonInventory = $this->getRawCacheItem($pInventory['cacheName']);
+//                            $newUsers = $this->getUserSearchWithInventory($jsonInventory,$zips);
+//                            $this->cacheItem($cacheName,$newUsers);
+//                        }else{
+//                            //dd('need to create from child');
+//                            $childZips = $pInventory['zips'];
+//                            $childInventory = $this->getCacheItem($pInventory['cacheName']);
+//                            $zipsOver = array_diff($zips,$childZips);
+//                            $newInventory = $this->getUserFromDB($zipsOver);
+//                            //$newInventory = json_decode(json_encode($newInventory),true);
+//                            $parentInventory = array_merge($childInventory,$newInventory);
+//                            $itemsCount = count($parentInventory);
+//                            $cacheStart = $this->getTime();
+//                            $this->cacheItem($cacheName,$parentInventory);
+//                            $cacheEnd = $this->getTime();
+//                            $cacheComplete = $this->timeDiff($cacheStart,$cacheEnd);
+//                            //\Log::debug("time taken for caching $cacheName with $itemsCount items is $cacheComplete");
+//                        }
+//
+//                    }else{// no inventory treat as first search on zip.
+//                        $this->createInventory($zipcode,$cacheName,$distance,$zips);
+//                    }
 
                     //else just retrive user and cache user
 
+                    $this->cacheItem($cacheName,$usersWithinCode);
                 }
 
                 $usersResult = $this->getCacheItem($cacheName);
@@ -167,7 +169,9 @@ class UserHelper extends BaseHelper
         $miles = $request->get('dist') ?? $this->defaults['miles'];
 
         $zip = $request->get('zip') ?? $this->defaults['zipcode'];
+        //dd('here');
         $users = $this->getUsersInZip($zip,$miles);
+        dd($users);
         $search = $request->get('search') ?? '';
         //dd($search);
         $search = strtolower($search);
