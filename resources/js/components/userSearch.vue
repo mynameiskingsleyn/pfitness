@@ -110,7 +110,7 @@
             //         return ( ( a.distance == b.distance ) ? 0 : ( ( a.distance > b.distance ) ? 1 : -1 ) );
             //     });
             // }
-        }
+        },
 
 
     }

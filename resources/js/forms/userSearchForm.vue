@@ -7,16 +7,23 @@
                      <zip :zip="this.currentzip" @zipchanged="updateZip"></zip>
                     </div>
                 </div>
+
                 <div class="row">
                     <div class="col-12">
                         <miles :distance="this.cdistance" :maxnum="150" @mileschanged="updateDistance"></miles>
                     </div>
                 </div>
-                <div class="row">
+                <div class="row" >
+                    <div class="col-12" v-if="hasLocation">
+                        <span @click="useLocation">
+                            <button class="btn btn-default">click to use your zipcode</button>
+                        </span>
+                    </div>
                     <div class="col-12">
                         <button @click="fetch" class="btn btn-primary">Submit</button>
                     </div>
                 </div>
+
             </div>
         </form>
     </div>
@@ -43,6 +50,9 @@
         },
 
         methods: {
+            useLocation(){
+                alert('gret');
+            },
             updateZip(zip){
                 //alert(zip);
                 this.zipCode = zip;
@@ -83,12 +93,23 @@
             },
 
             refresh(data){
-                //alert('good daty');
                 this.info = data.data;
                 //if(this.info.length){
                    this.$emit('refreshUsers',this.info);
                 //}
             }
+        },
+        computed:{
+            hasLocation(){
+                var hasLocation =this.localCache('get','geo_location_available');
+                if(hasLocation == 'false')
+                    return false;
+                return true
+            }
+
+        },
+        mounted(){
+            this.findLocation();
         }
 
 

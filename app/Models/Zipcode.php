@@ -58,6 +58,8 @@ class Zipcode extends BaseModel
         $zipCodes=null;
         $currentZip = $this->getZipInfo($zipCode);
         //dd($currentZip);
+        \DB::enableQueryLog();
+        $users = [];
         if($currentZip) {
             $lat = $currentZip->latitude;
             $lon = $currentZip->longitude; //dd($lon);
@@ -70,11 +72,13 @@ class Zipcode extends BaseModel
             HAVING (`distance` <= ".$radius." AND  `distance` >= 0)
             ORDER BY `distance` ASC,lname ASC");
         }
+        \Log::debug(\DB::getQueryLog());
         return $users;
     }
 
     public function getZipCodesWithUsers_copy($zipCode,$radius)
     {
+        //dd('here now');
         $zipCodes=null;
         $currentZip = $this->getZipInfo($zipCode);
         //dd($currentZip);
@@ -84,19 +88,15 @@ class Zipcode extends BaseModel
 
 
             \DB::enableQueryLog();
-            $zips = \DB::table('zipcodes')->Select("SELECT zip,
-            SQRT(POWER(69.1 * (latitude - $lat), 2) + POWER(69 * ($lon - longitude) * COS(latitude / 57.3), 2)) AS `distance`
-            HAVING (`distance` <= ".$radius." AND  `distance` >= 0)
-            ORDER BY `distance` ASC;")->get();
-            //\Log::debug(\DB::getQueryLog());
-
-//            $users = \DB::select("SELECT distinct(zc.zip), us.id,us.fname,us.lname,us.email,us.zipcode,
-//             us.city,us.state,us.country,
-//            SQRT(POWER(69.1 * (zc.latitude - ".$lat."), 2) + POWER(69.1 * (".$lon." - zc.longitude) * COS(zc.latitude / 57.3), 2)) AS `distance`
-//            FROM `".$this->table."` AS zc
-//            LEFT JOIN `users` AS us on us.zipcode = zc.zip
-//            HAVING (`distance` <= ".$radius." AND  `distance` >= 0)
-//            ORDER BY `distance` ASC;");
+           //$zips = \DB::table('zipcodes')
+            $zips = $this
+                ->select(\DB::raw("zip, 
+                SQRT(POWER(69.1 * (latitude - $lat), 2) + POWER(69 * ($lon - longitude) * COS(latitude / 57.3), 2)) AS `distance`"))
+                ->having('distance','<=',$radius)
+                ->orderBy('distance','asc')
+                ->with('Users')
+                ->get();
+//
             \Log::debug(\DB::getQueryLog());
         }
         return $zips;

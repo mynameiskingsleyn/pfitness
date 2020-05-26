@@ -15,7 +15,7 @@ class UserHelper extends BaseHelper
     public $pagenate;
     public function __construct(User $user, ZipCodeHelper $zipCodeHelper)
     {
-        $this->user = $user;
+        $this->userModel = $user;
         $this->zipcodeHelper = $zipCodeHelper;
         $this->pagenate = config('trainers.pagination.pagenate');
         $this->perPage = config('trainers.pagination.perpage');
@@ -45,11 +45,19 @@ class UserHelper extends BaseHelper
 
             $cacheName = $this->getCacheName($zipcode,$distance);
             $usersResult = $this->getCacheItem($cacheName);
-            //dd($usersResult);
+            //dd($usersResult
             if(!$usersResult){
-                $usersWithinCode = $this->zipcodeHelper->getUsersNearMe($zipcode,$distance);
-                //dd($usersWithinCode);
-                if($usersWithinCode) {
+                //$usersNear = $this->zipcodeHelper->getUsersNearMe($zipcode,$distance);
+                $usersNear = $this->userModel->getUsersInSearchZip($zipcode,$distance);
+                if($usersNear) {
+                    if(!is_array($usersNear)){
+                        $usersNear = $usersNear->toArray();
+                    }
+                    //dd($usersNear);
+
+                    //dd($usersNear);
+                    //$users = $this->extractUsersFromZips($zipswithUsersWithinCode);
+                    //dd($users);
 //                    $zips = array_column($zipsWithinCode, 'zip');
 //                    $pInventory = $this->findAnInventory($zipcode,$distance);
 //                    if(isset($pInventory['cacheName'])){ // possible inventory found..
@@ -82,12 +90,14 @@ class UserHelper extends BaseHelper
 
                     //else just retrive user and cache user
 
-                    $this->cacheItem($cacheName,$usersWithinCode);
+                    $this->cacheItem($cacheName,$usersNear);
                 }
 
                 $usersResult = $this->getCacheItem($cacheName);
                 //dd($usersResult);
             }
+
+            //dd($usersResult);
             $endTime = $this->getTime();
             $completTime = $this->timeDiff($startTime,$endTime);
             \Log::debug("time taken to get  all user for $zipcode is $completTime ");
@@ -97,6 +107,26 @@ class UserHelper extends BaseHelper
         }
         return [];
 
+    }
+
+    public function extractUsersFromZips($zipGroup)
+    {
+        $usersStack = [];
+        foreach($zipGroup as $zips){
+            //dd($zips);
+            $distance = $zips->distance;
+            //dd($distance);
+            $zipusers = $zips->users;
+            if($zipusers->count() > 0){
+                foreach($zipusers as $user){
+                    $user->distance = $distance;
+                    $usersStack[] = $user->toArray();
+                    //dd($usersStack);
+                }
+            }
+
+        }
+        return $usersStack;
     }
 /* not being used at the moment
     public function getUserSearchWithInventory($jsonInventory,$zips)
@@ -174,7 +204,6 @@ class UserHelper extends BaseHelper
         $users = $this->getUsersInZip($zip,$miles);
         //dd($users);
         $search = $request->get('search') ?? '';
-        //dd($search);
         $search = strtolower($search);
 
         //dd($users);
@@ -185,6 +214,7 @@ class UserHelper extends BaseHelper
         $names = array_values($usersLocate);
         //generate pages using positons
         $pagenumbers = $this->getUsersPageNumbers($users,$spots);
+        //dd($pagenumbers);
         $url = $request->fullUrl();
         //dd($url);
         // remove _search from url
@@ -212,6 +242,7 @@ class UserHelper extends BaseHelper
 
         $zip = $request->get('zip') ?? '48341';
         $users = $this->getUsersInZip($zip,$miles);
+        //dd($users);
         $next_page = null;
         $prev_page = null;
         $page_group = null;
@@ -230,6 +261,7 @@ class UserHelper extends BaseHelper
             //$url = $this->rebuildQueryWithPagination($request,[]);
             //dd($url);
             $usersInfo = $this->pagenateItem($request,$users);
+            //dd($usersInfo);
             if($usersInfo){
                 //dd($usersInfo);
                 $users = $usersInfo['users'];

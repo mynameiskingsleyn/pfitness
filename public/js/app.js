@@ -2723,6 +2723,13 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
 
 
 
@@ -2744,6 +2751,9 @@ __webpack_require__.r(__webpack_exports__);
     };
   },
   methods: {
+    useLocation: function useLocation() {
+      alert('gret');
+    },
     updateZip: function updateZip(zip) {
       //alert(zip);
       this.zipCode = zip;
@@ -2782,11 +2792,20 @@ __webpack_require__.r(__webpack_exports__);
       }
     },
     refresh: function refresh(data) {
-      //alert('good daty');
       this.info = data.data; //if(this.info.length){
 
       this.$emit('refreshUsers', this.info); //}
     }
+  },
+  computed: {
+    hasLocation: function hasLocation() {
+      var hasLocation = this.localCache('get', 'geo_location_available');
+      if (hasLocation == 'false') return false;
+      return true;
+    }
+  },
+  mounted: function mounted() {
+    this.findLocation();
   }
 });
 
@@ -39201,6 +39220,16 @@ var render = function() {
         ]),
         _vm._v(" "),
         _c("div", { staticClass: "row" }, [
+          _vm.hasLocation
+            ? _c("div", { staticClass: "col-12" }, [
+                _c("span", { on: { click: _vm.useLocation } }, [
+                  _c("button", { staticClass: "btn btn-default" }, [
+                    _vm._v("click to use your zipcode")
+                  ])
+                ])
+              ])
+            : _vm._e(),
+          _vm._v(" "),
           _c("div", { staticClass: "col-12" }, [
             _c(
               "button",
@@ -51464,13 +51493,37 @@ window.vue.prototype.pluralize = function (revert, count) {
 window.vue.prototype.inArray = function (item, keyit, group) {
   for (var prop in item) {
     if (prop == keyit) {
-      ///console.log('match prop is '+prop);
       var value = item[prop];
       return fitness.itemInArray(value, group);
-    } // console.log('property is '+prop);
-    //if(item.hasOwnProperty(prop)){ }
-    //console.log('property is '+prop);
+    }
+  }
+};
 
+window.vue.prototype.userfunc = function () {
+  for (var _len = arguments.length, params = new Array(_len), _key = 0; _key < _len; _key++) {
+    params[_key] = arguments[_key];
+  }
+
+  if (typeof params[0] === 'string') {
+    return fitness[params[0]](params[1]);
+  }
+};
+
+window.vue.prototype.findLocation = function () {
+  var location = fitness.findGeoPosition(); //alert('attempted to find location');
+};
+
+window.vue.prototype.localCache = function () {
+  for (var _len2 = arguments.length, params = new Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
+    params[_key2] = arguments[_key2];
+  }
+
+  if (typeof params[0] === 'string') {
+    if (params[0] == 'set') {
+      return fitness.localCache[params[0]](params[1], params[2]);
+    }
+
+    return fitness.localCache[params[0]](params[1]);
   }
 };
 /**
@@ -51963,9 +52016,13 @@ __webpack_require__.r(__webpack_exports__);
   !*** ./resources/js/fitness.js ***!
   \*********************************/
 /*! no static exports found */
-/***/ (function(module, exports) {
+/***/ (function(module, exports, __webpack_require__) {
 
-var localCache = {
+/* WEBPACK VAR INJECTION */(function(module) {var _module$exports;
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+var _localCache = {
   remove: function remove(key) {
     localStorage.removeItem(key);
   },
@@ -51973,6 +52030,7 @@ var localCache = {
     return localStorage.getItem(key) !== null;
   },
   get: function get(key) {
+    //alert('get called');
     return localStorage.getItem(key);
   },
   set: function set(key, value) {
@@ -51980,100 +52038,141 @@ var localCache = {
     return true;
   }
 };
-module.exports = {
-  itemInArray: function itemInArray(item, theArray) {
-    //console.log('item to be compared is '+item);
-    //console.log(theArray);
-    if (item && theArray) {
-      item = item.toLowerCase();
-      var result = theArray.indexOf(item);
 
-      if (result >= 0) {
-        return true;
-      }
+var _itemInArray = function _itemInArray(item, theArray) {
+  if (item && theArray) {
+    var result = theArray.indexOf(item);
 
-      return false;
+    if (result >= 0) {
+      return true;
     }
 
     return false;
-  },
-  findGeoPosition: function findGeoPosition() {
-    //$('.zipcodePopup_errorlocationInfo span').html('');
-    var currentLocation = {};
-
-    if (navigator.geolocation) {
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(this.showPosition, this.showError);
-      } else {
-        this.dd("Geolocation is not supported by this browser."); // alert('Geolocation is not supported by this browser so please enter Zip Code to search the latest inventory in your area.');
-
-        var title = 'Alert!';
-        var contents = 'Geolocation is not supported by this browser so please enter Zip Code to search the latest inventory in your area.'; //AlertMessage(title, contents);
-
-        $('.zipcodePopup_errorlocationInfo span').html(contents); //lpage.landingRequest();
-      }
-    } //$('#selectedZipCodePopup_currentLocation').removeClass('disabled');
-    //$('#selectedZipCodePopup_currentLocation').html('<i class="fa fa-map-marker" aria-hidden="true"></i>Use current location<i class="fa fa-angle-right"></i>');
-
-  },
-  showPosition: function showPosition(position) {
-    var location = [];
-    var latitude = position.coords.latitude;
-    var longitude = position.coords.longitude;
-    localCache.set('latitude', latitude);
-    localCache.set('longitude', longitude); //ajax.promise('find_zip_by_cord', 'post', JSON.stringify({ latitude: latitude, longitude: longitude }));
-
-    return true;
-  },
-  showError: function showError(error) {
-    var err = ' so please enter Zip Code to search the latest inventory in your area.';
-
-    switch (error.code) {
-      case error.PERMISSION_DENIED:
-        this.dd("You denied the request for Geolocation."); //alert('Location is disabled. Please enter Zip Code to search the latest inventory in your area.');
-
-        var title = 'Alert!';
-        var contents = 'Location is disabled. Please enter Zip Code to search the latest inventory in your area.'; //AlertMessage(title, contents);
-        // $('.zipcodePopup_errorlocationInfo span').html(contents);
-        //lpage.landingRequest();
-
-        break;
-
-      case error.POSITION_UNAVAILABLE:
-        this.dd("Location information is unavailable.");
-        var title = 'Alert!';
-        var contents = 'Location information is unavailable ' + err; // alert('Location information is unavailable '+err);
-        //AlertMessage(title, contents);
-
-        $('.zipcodePopup_errorlocationInfo span').html(contents); //lpage.landingRequest();
-
-        break;
-
-      case error.TIMEOUT:
-        this.dd("The request to get user location timed out."); //alert('The request to get user location timed out '+err);
-
-        title = 'Alert!';
-        contents = 'The request to get user location timed out ' + err; //AlertMessage(title, contents);
-
-        $('.zipcodePopup_errorlocationInfo span').html(contents); //lpage.landingRequest();
-
-        break;
-
-      case error.UNKNOWN_ERROR:
-        this.dd("An unknown error occurred."); //  alert('An unknown error occurred '+err);
-
-        var title = 'Alert!';
-        var contents = 'An unknown error occurred ' + err; //AlertMessage(title, contents);
-        //$('.zipcodePopup_errorlocationInfo span').html(contents);
-        //lpage.landingRequest();
-
-        break;
-    }
-  },
-  dd: function dd(str) {
-    console.log(str);
   }
+
+  return false;
 };
+
+var _findGeoPosition = function _findGeoPosition() {
+  //alert('fitness find location');
+  //$('.zipcodePopup_errorlocationInfo span').html('');
+  var currentLocation = {};
+
+  if (navigator.geolocation) {
+    //alert('in navy');
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(this.showPosition, this.showError);
+    } else {
+      module.exoprts.dd("Geolocation is not supported by this browser."); // alert('Geolocation is not supported by this browser so please enter Zip Code to search the latest inventory in your area.');
+
+      var title = 'Alert!';
+      var contents = 'Geolocation is not supported by this browser so please enter Zip Code to search the latest inventory in your area.'; //AlertMessage(title, contents);
+
+      alert(contents); //lpage.landingRequest();
+    }
+  } //$('#selectedZipCodePopup_currentLocation').removeClass('disabled');
+  //$('#selectedZipCodePopup_currentLocation').html('<i class="fa fa-map-marker" aria-hidden="true"></i>Use current location<i class="fa fa-angle-right"></i>');
+
+};
+
+var _dd = function _dd(str) {
+  alert(str);
+  console.log(str);
+};
+
+var _showPosition = function _showPosition(position) {
+  var latitude = position.coords.latitude;
+  var longitude = position.coords.longitude;
+  var location = {
+    'latitude': latitude,
+    'longitude': longitude
+  };
+  alert(latitude); //localCache.set('latitude', latitude);
+  //localCache.set('longitude', longitude);
+  //ajax.promise('find_zip_by_cord', 'post', JSON.stringify({ latitude: latitude, longitude: longitude }));
+
+  return true;
+};
+
+var _showError = function _showError(error) {
+  var err = ' so please enter Zip Code to search the latest inventory in your area.';
+
+  switch (error.code) {
+    case error.PERMISSION_DENIED:
+      //this.dd("You denied the request for Geolocation.");
+      module.exports.dd("You denied the request for Geolocation."); //alert('Location is disabled. Please enter Zip Code to search the latest inventory in your area.');
+
+      var title = 'Alert!';
+      var contents = 'Location is disabled. Please enter Zip Code to search the latest inventory in your area.'; //AlertMessage(title, contents);
+      // $('.zipcodePopup_errorlocationInfo span').html(contents);
+      //lpage.landingRequest();
+
+      break;
+
+    case error.POSITION_UNAVAILABLE:
+      module.exports.dd("Geo Location information is unavailable.");
+      var title = 'Alert!';
+      var contents = 'Location information is unavailable ' + err; // alert('Location information is unavailable '+err);
+      //AlertMessage(title, contents);
+      //lpage.landingRequest();
+
+      break;
+
+    case error.TIMEOUT:
+      //module.exports.dd("The request to get user location timed out.");
+      //alert('The request to get user location timed out '+err);
+      title = 'Alert!';
+      contents = 'The request to get user location timed out ' + err; //AlertMessage(title, contents);
+      //$('.zipcodePopup_errorlocationInfo span').html(contents);
+      //lpage.landingRequest();
+
+      break;
+
+    case error.UNKNOWN_ERROR:
+      this.dd("An unknown error occurred. while trying to fetch location"); //  alert('An unknown error occurred '+err);
+
+      var title = 'Alert!';
+      var contents = 'An unknown error occurred ' + err;
+      break;
+  }
+
+  var report = {
+    'title': title,
+    'content': contents
+  };
+
+  _localCache.set('location_error', report);
+
+  _localCache.set('geo_location_available', false); //alert (_localCache.get('location_error'));
+
+};
+
+var _AlertMessage = function _AlertMessage(title, contents) {
+  $.alert({
+    buttons: {
+      OK: {
+        btnClass: 'alert-button',
+        action: function action() {}
+      }
+    },
+    title: '<span style="font-size: 18px !important; font-family:Helvetica Neue,Helvetica,Arial,sans-serif;">' + title + '</span>',
+    boxWidth: '35%',
+    backgroundDismiss: false,
+    bgOpacity: .1,
+    useBootstrap: false,
+    content: contents,
+    draggable: false
+  });
+};
+
+module.exports = (_module$exports = {
+  itemInArray: _itemInArray,
+  AlertMessage: _AlertMessage,
+  dd: _dd,
+  showError: _showError,
+  showPosition: _showPosition
+}, _defineProperty(_module$exports, "itemInArray", _itemInArray), _defineProperty(_module$exports, "findGeoPosition", _findGeoPosition), _defineProperty(_module$exports, "localCache", _localCache), _module$exports);
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../node_modules/webpack/buildin/module.js */ "./node_modules/webpack/buildin/module.js")(module)))
 
 /***/ }),
 

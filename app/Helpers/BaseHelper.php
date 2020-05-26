@@ -44,8 +44,9 @@ class BaseHelper
      */
     public function pagenateItem($request,$items=[])
     {
+        //dd($items);
         $start =$this->getTime();
-        if(!$request->has(''))
+        //if(!$request->has(''))
         $nextPageUrl = null;
         $prevPageUrl = null;
         $result = [];
@@ -63,6 +64,7 @@ class BaseHelper
             $count = count($items);
             $hasNext = $this->hasNextPage($items,$p);
             $hasCurrent = $this->hasItemPage($items,$p);
+            //dd($hasCurrent);
             //dd($hasCurrent);
             if(!$hasCurrent){
                 return ['users'=>[],'count'=>$count];
@@ -164,10 +166,10 @@ class BaseHelper
         if($page == 0){
             return false;
         }
-        $size = $this->perPage;
-        $item_size = count($items);
-        $current_position = $size * $page;
-        return $current_position <= $item_size;
+        $numberOfPages = $this->getNumberOfPages($items);
+        //dd($numberOfPages);
+
+        return ($numberOfPages >= $page);
 
     }
 
@@ -211,7 +213,7 @@ class BaseHelper
         //dd($spots);
         $itemPerPage = $this->perPage;
         $items_size = count($items);
-        $numbOfPages = intval($items_size/$itemPerPage);
+        $numbOfPages = $this->getNumberOfPages($items);
         //dd($numbOfPages);
         $mapper = [];
         $counter = 1;
@@ -241,9 +243,11 @@ class BaseHelper
 
     public function getNumberOfPages($items)
     {
+
         $itemPerPage = $this->perPage;
         $item_size = count($items);
-        $numbOfPages = intval($item_size/$itemPerPage);
+        $numbOfPages = intval(ceil( $item_size/$itemPerPage));
+        //dd($numbOfPages);
         return $numbOfPages;
     }
 
@@ -319,17 +323,22 @@ class BaseHelper
      */
     public function findMatches($group=[],$keys=[],$returnname,$search='Searching')
     {
-        //dd($search);
+        //dd($group);
         $matchedGroup = [];
         foreach($group as $key=>$anItem){
             foreach($keys as $look){
+                //dd($keys);
                 if(isset($group[$key][$look])){
-                    if(strpos($group[$key][$look],$search) !== False){
+                    //dd('has key');
+                    //dd($group[$key][$look]);
+                    if(strpos(strtolower($group[$key][$look]),$search) !== False){
+                        //dd('foound you');
                         $matchedGroup[$key]= $group[$key][$returnname];
                     }
                 }
             }
         }
+        //dd('nope');
         return $matchedGroup;
     }
 

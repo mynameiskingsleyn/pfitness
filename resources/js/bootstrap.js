@@ -39,16 +39,32 @@ window.vue.prototype.inArray= function(item,keyit,group){
 
     for(var prop in item) {
         if(prop == keyit){
-            ///console.log('match prop is '+prop);
             var value = item[prop];
 
             return fitness.itemInArray(value,group);
         }
-       // console.log('property is '+prop);
-        //if(item.hasOwnProperty(prop)){ }
-            //console.log('property is '+prop);
     }
 
+}
+
+window.vue.prototype.userfunc=function(...params){
+    if(typeof params[0] === 'string'){
+        return fitness[params[0]](params[1])
+    }
+}
+
+window.vue.prototype.findLocation = function(){
+    var location = fitness.findGeoPosition();
+    //alert('attempted to find location');
+}
+
+window.vue.prototype.localCache = function (...params) {
+    if(typeof params[0] === 'string'){
+        if(params[0]=='set'){
+           return fitness.localCache[params[0]](params[1],params[2]);
+        }
+        return fitness.localCache[params[0]](params[1]);
+    }
 }
 
 /**
